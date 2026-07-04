@@ -79,8 +79,11 @@ async function walkTo(c, username, tx, tz, timeoutMs = 30000) {
   return false
 }
 
-// 走到传送门并传送, 返回 map_changed 数据
-async function teleport(c, username, px, pz) {
+// 走到传送门并传送(可带绕行路径点), 返回 map_changed 数据
+async function teleport(c, username, px, pz, waypoints = []) {
+  for (const [wx, wz] of waypoints) {
+    await walkTo(c, username, wx, wz)
+  }
   await walkTo(c, username, px, pz)
   const before = c.mapChanges.length
   c.socket.emit('change_map')
@@ -102,8 +105,8 @@ A.socket.emit('change_map')
 await sleep(400)
 check('远离传送门时传送被拒绝', A.mapChanges.length === 0)
 
-// 3. 走到传送门传送到平原
-const change = await teleport(A, 'map_test_a', 0, 28)
+// 3. 走到传送门传送到平原(绕开中央喷泉)
+const change = await teleport(A, 'map_test_a', 0, 28, [[6, 8]])
 check('传送到起始平原', change?.map === 'novice_plain', change?.map)
 check('map_changed 带新图怪物(14 只)', (change?.monsters ?? []).length === 14, `实际 ${change?.monsters?.length}`)
 check('出现在平原入口(0,-44)附近', change && Math.hypot(change.x - 0, change.z + 44) < 2,
@@ -121,7 +124,7 @@ check('跨图聊天互通', B.chats.some((m) => m.from === '旅人甲' && m.text
 
 // 5. B 传送到平原, A 收到 entity_enter
 A.enters.length = 0
-const bChange = await teleport(B, 'map_test_b', 0, 28)
+const bChange = await teleport(B, 'map_test_b', 0, 28, [[6, 8]])
 check('B 也传送到平原', bChange?.map === 'novice_plain')
 await sleep(400)
 check('A 收到 B 的 entity_enter', A.enters.some((p) => p.id === 'map_test_b'))
@@ -133,14 +136,14 @@ check('B 传送回王城', bBack?.map === 'castle_town')
 await sleep(400)
 check('A 收到 B 的 entity_leave', A.leaves.some((p) => p.id === 'map_test_b'))
 
-// 6. A 一路传送到魔王城, 验证各图怪物
+// 6. A 一路传送到魔王城, 验证各图怪物(洞窟绕开中央巨岩)
 const route = [
-  { portal: [0, 48], expect: 'mist_forest', monsters: 10 },
-  { portal: [0, 43], expect: 'rock_cavern', monsters: 9 },
-  { portal: [0, 33], expect: 'demon_castle', monsters: 6 },
+  { portal: [0, 48], expect: 'mist_forest', monsters: 10, waypoints: [] },
+  { portal: [0, 43], expect: 'rock_cavern', monsters: 9, waypoints: [] },
+  { portal: [0, 33], expect: 'demon_castle', monsters: 6, waypoints: [[6, 0]] },
 ]
 for (const leg of route) {
-  const ch = await teleport(A, 'map_test_a', leg.portal[0], leg.portal[1])
+  const ch = await teleport(A, 'map_test_a', leg.portal[0], leg.portal[1], leg.waypoints)
   check(`传送到 ${leg.expect}`, ch?.map === leg.expect, ch?.map)
   check(`${leg.expect} 怪物数量 ${leg.monsters}`, (ch?.monsters ?? []).length === leg.monsters,
     `实际 ${ch?.monsters?.length}`)
