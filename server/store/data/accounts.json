@@ -1,0 +1,40 @@
+{
+  "ybeetle": {
+    "username": "ybeetle",
+    "passwordHash": "$2b$10$Gp.DCVZY4ziFHLdmojEXS.2bD8oX5kjBoWUc6JPJ5muZoIH3eYfPe",
+    "createdAt": "2026-07-04T15:17:05.464Z",
+    "character": {
+      "nickname": "小陈",
+      "classId": "hero",
+      "level": 1,
+      "exp": 0,
+      "gold": 0,
+      "hp": 120,
+      "mp": 30,
+      "map": "novice_plain",
+      "pos": {
+        "x": -0.0442069269722669,
+        "z": 5.318873734844723
+      }
+    }
+  },
+  "ybeetle2": {
+    "username": "ybeetle2",
+    "passwordHash": "$2b$10$.KFBn7yuT3c/.I.T3UwM.eftd0JK.nqIFl8mUQ4dXiAATTlmwRJqC",
+    "createdAt": "2026-07-04T15:17:53.693Z",
+    "character": {
+      "nickname": "小东",
+      "classId": "mage",
+      "level": 1,
+      "exp": 0,
+      "gold": 0,
+      "hp": 80,
+      "mp": 60,
+      "map": "novice_plain",
+      "pos": {
+        "x": 22.286836392805004,
+        "z": -15.555654569985236
+      }
+    }
+  }
+}

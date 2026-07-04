@@ -1,184 +1,272 @@
-.counter {
-  font-size: 16px;
-  padding: 5px 10px;
-  border-radius: 5px;
-  color: var(--accent);
-  background: var(--accent-bg);
-  border: 2px solid transparent;
-  transition: border-color 0.3s;
-  margin-bottom: 24px;
-
-  &:hover {
-    border-color: var(--accent-border);
-  }
-  &:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-  }
+/* ===== 全局 ===== */
+* {
+  box-sizing: border-box;
 }
 
-.hero {
-  position: relative;
-
-  .base,
-  .framework,
-  .vite {
-    inset-inline: 0;
-    margin: 0 auto;
-  }
-
-  .base {
-    width: 170px;
-    position: relative;
-    z-index: 0;
-  }
-
-  .framework,
-  .vite {
-    position: absolute;
-  }
-
-  .framework {
-    z-index: 1;
-    top: 34px;
-    height: 28px;
-    transform: perspective(2000px) rotateZ(300deg) rotateX(44deg) rotateY(39deg)
-      scale(1.4);
-  }
-
-  .vite {
-    z-index: 0;
-    top: 107px;
-    height: 26px;
-    width: auto;
-    transform: perspective(2000px) rotateZ(300deg) rotateX(40deg) rotateY(39deg)
-      scale(0.8);
-  }
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
 }
 
-#center {
+/* ===== DQ 风格界面(深蓝底 + 白双线框) ===== */
+.dq-screen {
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  gap: 25px;
-  place-content: center;
-  place-items: center;
-  flex-grow: 1;
-
-  @media (max-width: 1024px) {
-    padding: 32px 20px 24px;
-    gap: 18px;
-  }
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  background: radial-gradient(ellipse at center, #1a2456 0%, #0a0e2a 100%);
 }
 
-#next-steps {
+.dq-title {
+  color: #ffd75e;
+  font-size: 40px;
+  letter-spacing: 6px;
+  text-shadow: 3px 3px 0 #000;
+  margin: 0;
+}
+
+.dq-panel {
+  background: #101540;
+  border: 3px solid #fff;
+  border-radius: 10px;
+  box-shadow: 0 0 0 3px #101540, 0 0 0 5px #fff, 0 8px 32px rgba(0, 0, 0, 0.6);
+  padding: 28px 36px;
+  min-width: 340px;
   display: flex;
-  border-top: 1px solid var(--border);
-  text-align: left;
-
-  & > div {
-    flex: 1 1 0;
-    padding: 32px;
-    @media (max-width: 1024px) {
-      padding: 24px 20px;
-    }
-  }
-
-  .icon {
-    margin-bottom: 16px;
-    width: 22px;
-    height: 22px;
-  }
-
-  @media (max-width: 1024px) {
-    flex-direction: column;
-    text-align: center;
-  }
+  flex-direction: column;
+  gap: 16px;
+  color: #fff;
 }
 
-#docs {
-  border-right: 1px solid var(--border);
-
-  @media (max-width: 1024px) {
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-  }
+.dq-panel-wide {
+  min-width: 560px;
 }
 
-#next-steps ul {
-  list-style: none;
-  padding: 0;
+.dq-panel h2 {
+  margin: 0 0 4px;
+  font-size: 18px;
+  color: #ffd75e;
+}
+
+.dq-panel label {
   display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+  color: #cdd3ff;
+}
+
+.dq-panel input {
+  background: #060a20;
+  border: 2px solid #4a5490;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 16px;
+  padding: 10px 12px;
+  outline: none;
+}
+
+.dq-panel input:focus {
+  border-color: #ffd75e;
+}
+
+.dq-panel button[type='submit'] {
+  margin-top: 8px;
+  background: #ffd75e;
+  color: #1a1a2e;
+  border: none;
+  border-radius: 6px;
+  font-size: 17px;
+  font-weight: bold;
+  padding: 12px;
+  cursor: pointer;
+  letter-spacing: 4px;
+}
+
+.dq-panel button[type='submit']:hover {
+  background: #ffe58a;
+}
+
+.dq-panel button[type='submit']:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+.dq-link {
+  background: none;
+  border: none;
+  color: #8fa1ff;
+  font-size: 13px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.dq-msg {
+  margin: 0;
+  color: #ff9a9a;
+  font-size: 13px;
+}
+
+/* 职业选择卡片 */
+.dq-classes {
+  display: flex;
+  gap: 12px;
+}
+
+.dq-class-card {
+  flex: 1;
+  background: #060a20;
+  border: 2px solid #4a5490;
+  border-radius: 8px;
+  color: #fff;
+  padding: 14px 10px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
   gap: 8px;
-  margin: 32px 0 0;
-
-  .logo {
-    height: 18px;
-  }
-
-  a {
-    color: var(--text-h);
-    font-size: 16px;
-    border-radius: 6px;
-    background: var(--social-bg);
-    display: flex;
-    padding: 6px 12px;
-    align-items: center;
-    gap: 8px;
-    text-decoration: none;
-    transition: box-shadow 0.3s;
-
-    &:hover {
-      box-shadow: var(--shadow);
-    }
-    .button-icon {
-      height: 18px;
-      width: 18px;
-    }
-  }
-
-  @media (max-width: 1024px) {
-    margin-top: 20px;
-    flex-wrap: wrap;
-    justify-content: center;
-
-    li {
-      flex: 1 1 calc(50% - 8px);
-    }
-
-    a {
-      width: 100%;
-      justify-content: center;
-      box-sizing: border-box;
-    }
-  }
+  text-align: center;
 }
 
-#spacer {
-  height: 88px;
-  border-top: 1px solid var(--border);
-  @media (max-width: 1024px) {
-    height: 48px;
-  }
+.dq-class-card strong {
+  font-size: 18px;
+  color: #ffd75e;
 }
 
-.ticks {
+.dq-class-card span {
+  font-size: 12px;
+  color: #cdd3ff;
+  line-height: 1.5;
+}
+
+.dq-class-card em {
+  font-style: normal;
+  font-size: 11px;
+  color: #8fa1ff;
+}
+
+.dq-class-card.selected {
+  border-color: #ffd75e;
+  box-shadow: 0 0 12px rgba(255, 215, 94, 0.4);
+}
+
+/* ===== 游戏画面与 HUD ===== */
+.game-root {
   position: relative;
   width: 100%;
+  height: 100%;
+  background: #000;
+}
 
-  &::before,
-  &::after {
-    content: '';
-    position: absolute;
-    top: -4.5px;
-    border: 5px solid transparent;
-  }
+.game-root canvas {
+  display: block;
+}
 
-  &::before {
-    left: 0;
-    border-left-color: var(--border);
-  }
-  &::after {
-    right: 0;
-    border-right-color: var(--border);
-  }
+.hud-top-left {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  background: rgba(10, 14, 42, 0.82);
+  border: 2px solid #fff;
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: #fff;
+  min-width: 210px;
+  pointer-events: none;
+}
+
+.hud-name {
+  font-size: 15px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.hud-class {
+  color: #ffd75e;
+  font-size: 12px;
+  font-weight: normal;
+  margin-left: 6px;
+}
+
+.hud-bar {
+  position: relative;
+  height: 16px;
+  background: #060a20;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 5px;
+}
+
+.hud-bar > div {
+  height: 100%;
+  transition: width 0.3s;
+}
+
+.hud-bar.hp > div {
+  background: linear-gradient(#5ad45a, #2e9e2e);
+}
+
+.hud-bar.mp > div {
+  background: linear-gradient(#5a9ad4, #2e5e9e);
+}
+
+.hud-bar span {
+  position: absolute;
+  inset: 0;
+  font-size: 11px;
+  line-height: 16px;
+  text-align: center;
+  text-shadow: 1px 1px 0 #000;
+}
+
+.hud-top-right {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(10, 14, 42, 0.82);
+  border: 2px solid #fff;
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: #ffd75e;
+  font-size: 14px;
+  text-align: right;
+  pointer-events: none;
+}
+
+.hud-status {
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.hud-status.online {
+  color: #5ad45a;
+}
+
+.hud-status.connecting {
+  color: #ffd75e;
+}
+
+.hud-status.offline {
+  color: #ff9a9a;
+}
+
+.hud-bottom {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(10, 14, 42, 0.7);
+  border-radius: 6px;
+  padding: 6px 18px;
+  color: #cdd3ff;
+  font-size: 12px;
+  pointer-events: none;
 }
