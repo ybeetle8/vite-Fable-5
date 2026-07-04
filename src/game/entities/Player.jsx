@@ -120,7 +120,16 @@ export default function Player({ character, posRef }) {
     // 攻击动画播放中不被移动动画打断
     if (performance.now() < s.attackAnimUntil && name !== 'Death_A') return
     const prev = actions[s.anim]
-    actions[name].reset().fadeIn(0.15).play()
+    const action = actions[name].reset()
+    // 死亡动画只播一次并定格在最后一帧(倒地姿势), 避免循环反复倒地
+    if (name === 'Death_A') {
+      action.setLoop(THREE.LoopOnce, 1)
+      action.clampWhenFinished = true
+    } else {
+      action.setLoop(THREE.LoopRepeat, Infinity)
+      action.clampWhenFinished = false
+    }
+    action.fadeIn(0.15).play()
     prev?.fadeOut(0.15)
     s.anim = name
   }

@@ -24,7 +24,16 @@ export default function RemotePlayer({ id }) {
   function playAnim(name) {
     if (animRef.current === name || !actions[name]) return
     const prev = actions[animRef.current]
-    actions[name].reset().fadeIn(0.15).play()
+    const action = actions[name].reset()
+    // 死亡动画只播一次并定格在最后一帧, 避免循环反复倒地
+    if (name === 'Death_A') {
+      action.setLoop(THREE.LoopOnce, 1)
+      action.clampWhenFinished = true
+    } else {
+      action.setLoop(THREE.LoopRepeat, Infinity)
+      action.clampWhenFinished = false
+    }
+    action.fadeIn(0.15).play()
     prev?.fadeOut(0.15)
     animRef.current = name
   }

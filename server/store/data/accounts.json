@@ -1,0 +1,40 @@
+{
+  "11": {
+    "username": "11",
+    "passwordHash": "$2b$10$CfCHYy0WGKBW2zSSDYgQ/u9wsgpe.KRbLb1XJHOA1nFCgFBSMNJN2",
+    "createdAt": "2026-07-04T15:54:01.202Z",
+    "character": {
+      "nickname": "11",
+      "classId": "hero",
+      "level": 1,
+      "exp": 0,
+      "gold": 0,
+      "hp": 28,
+      "mp": 30,
+      "map": "novice_plain",
+      "pos": {
+        "x": 12.575181104944802,
+        "z": 8.011088732275988
+      }
+    }
+  },
+  "22": {
+    "username": "22",
+    "passwordHash": "$2b$10$bmzgCmjSWrJJg4KCX/ZZUOb3syoe4JmvWVLpcMpdFXD8rPDExKx8O",
+    "createdAt": "2026-07-04T15:54:21.685Z",
+    "character": {
+      "nickname": "22",
+      "classId": "priest",
+      "level": 1,
+      "exp": 16,
+      "gold": 6,
+      "hp": 95,
+      "mp": 50,
+      "map": "novice_plain",
+      "pos": {
+        "x": 9.286101730552664,
+        "z": 3.961101730552665
+      }
+    }
+  }
+}
