@@ -234,6 +234,7 @@ export default function Player({ character, posRef }) {
         level={stats?.level ?? character.level}
         hp={stats?.hp ?? character.hp}
         maxHp={stats?.maxHp ?? character.hp}
+        getStats={() => worldStore.getSelfStats()}
         color="#ffd75e"
       />
     </group>

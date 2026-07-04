@@ -87,6 +87,7 @@ export default function RemotePlayer({ id }) {
         level={info.level}
         hp={info.hp}
         maxHp={info.maxHp}
+        getStats={() => worldStore.getRemote(id)?.info}
         color="#aee6ff"
       />
     </group>

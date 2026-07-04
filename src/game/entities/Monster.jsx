@@ -108,6 +108,7 @@ export default function Monster({ id }) {
         nickname={info.name}
         hp={info.hp}
         maxHp={info.maxHp}
+        getStats={() => worldStore.getMonster(id)?.info}
         color="#ffb0b0"
         height={1.5}
       />
