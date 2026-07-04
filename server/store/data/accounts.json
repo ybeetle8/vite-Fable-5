@@ -14,7 +14,26 @@
       "map": "castle_town",
       "pos": {
         "x": 0,
-        "z": 0
+        "z": 5.5
+      }
+    }
+  },
+  "map_test_b": {
+    "username": "map_test_b",
+    "passwordHash": "$2b$10$HuIc9rNrhzsSaVsPULujzO.Epnc7XIk.VgW29WRqnA1Q9M1ZnF9LK",
+    "createdAt": "2026-07-04T16:16:51.490Z",
+    "character": {
+      "nickname": "旅人乙",
+      "classId": "mage",
+      "level": 1,
+      "exp": 0,
+      "gold": 0,
+      "hp": 80,
+      "mp": 60,
+      "map": "castle_town",
+      "pos": {
+        "x": 0,
+        "z": -13.5
       }
     }
   }

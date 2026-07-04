@@ -1,18 +1,134 @@
-# React + Vite
+# Fable-5 — 3D 网页多人 MMORPG
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+> 世界观参考《勇者斗恶龙》风格的经典 JRPG，运行于浏览器的 3D 多人在线角色扮演游戏。
 
-Currently, two official plugins are available:
+## 项目简介
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+多名玩家通过浏览器进入同一个世界，创建角色、探索地图、实时战斗、组队冒险。世界结构按 DQ 经典布局展开：**王城 → 平原 → 森林 → 洞窟 → 魔王城**，美术走低多边形（Low Poly）卡通风格。
 
-## React Compiler
+## 技术栈
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+| 部分 | 技术 |
+|------|------|
+| 前端框架 | Vite + React 19 |
+| 3D 渲染 | Three.js + @react-three/fiber + @react-three/drei |
+| 3D 模型 | Quaternius / Kenney 免费低模素材（CC0，GLB 格式） |
+| 网络通信 | Socket.IO（客户端 + 服务端） |
+| 游戏服务器 | Node.js（纯 JS，ESM），位于 `server/` 目录 |
+| 账号系统 | 用户名 + 密码（bcrypt 加密），JSON 文件持久化 |
 
-Note: This will impact Vite dev & build performances.
+## 快速启动
 
-## Expanding the Oxlint configuration
+```bash
+npm install
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+# 仅启动前端
+npm run dev
+
+# 仅启动服务器
+npm run server
+
+# 前端 + 服务器一并启动（推荐）
+npm run dev:all
+```
+
+前端默认端口 `5173`，服务器端口 `3001`。
+
+## 目录结构
+
+```
+vite-fable-5/
+├── src/                    # 前端（Vite + React）
+│   ├── game/               # 游戏核心
+│   │   ├── scenes/         # 各地图场景
+│   │   ├── entities/       # 玩家 / 怪物 / NPC 实体组件
+│   │   ├── net/            # Socket.IO 封装 + HTTP 接口
+│   │   └── input/          # 键鼠输入控制
+│   ├── ui/                 # HUD / 背包 / 聊天 / 任务等 React UI
+│   └── main.jsx
+├── public/
+│   └── models/             # GLB 模型资源
+├── server/                 # 游戏服务器
+│   ├── index.js            # 入口（HTTP + Socket.IO）
+│   ├── auth/               # 注册 / 登录 / 会话 Token
+│   ├── world/              # 地图 / 房间管理
+│   ├── systems/            # 战斗 / AI / 任务 / 物品系统
+│   ├── data/               # 静态配置（怪物表 / 物品表 / 地图表）
+│   └── store/              # JSON 存档持久化
+├── shared/                 # 前后端共享（事件名常量 / 公式）
+├── notes/                  # 文档
+└── test-server/            # 服务器测试代码
+```
+
+## 世界地图
+
+```
+阿雷夫王城（安全区 Lv1+）
+    └── 起始平原（Lv1-10）
+            └── 迷雾森林（Lv10-20）
+                    └── 岩石洞窟（Lv20-30）
+                                └── 魔王城（Lv30+）
+```
+
+地图间通过传送点切换，王城为安全区不会发生战斗。
+
+## 核心玩法
+
+- **账号系统**：注册/登录，创建角色（勇者 / 魔法师 / 僧侣），同账号仅一个连接在线
+- **实时战斗**：空格普攻，`1/2/3` 释放技能，战斗结算全部在服务器端进行
+- **多人同步**：同地图玩家互相可见，20 TPS 状态广播 + 客户端插值平滑
+- **成长系统**：击杀获得经验升级，死亡回王城复活（金币减半）
+- **聊天**：世界频道 / 地图频道，`Enter` 唤出输入框
+- **NPC / 商店 / 任务**：国王发布主线任务，武器店 / 道具店 / 旅馆 / 教会
+- **背包**：24 格格子背包，消耗品、装备、任务物品分类
+
+## 操作方式
+
+| 按键 | 功能 |
+|------|------|
+| WASD / 方向键 | 移动 |
+| 鼠标右键拖动 | 旋转镜头 |
+| 滚轮 | 缩放镜头 |
+| E | 与 NPC / 传送点交互 / 拾取 |
+| 空格 | 普通攻击 |
+| 1 / 2 / 3 | 释放技能 |
+| B | 背包 |
+| Q | 任务面板 |
+| C | 角色面板 |
+| Enter | 聊天输入 |
+
+## 开发进度
+
+### 第一期 MVP
+- [x] M1 工程搭建与一键启动
+- [x] M2 账号系统
+- [x] M3 3D 场景与角色控制
+- [x] M4 多人同步
+- [x] M5 战斗与怪物 AI
+- [x] M6 成长、死亡、聊天与存档
+- [x] M7 全地图与传送切图
+
+### 第二期 内容扩充
+- [ ] M8 职业技能与装备
+- [ ] M9 NPC / 商店 / 任务系统
+- [ ] M10 背包与掉落拾取
+
+### 第三期 体验完善
+- [ ] M11 组队系统
+- [ ] M12 BOSS 与终局战
+- [ ] M13 表现与音效
+- [ ] M14 稳定性与基础反作弊
+
+## 非功能性指标
+
+| 项 | 目标 |
+|----|------|
+| 单图承载 | ≥ 20 名玩家流畅同步 |
+| 同步频率 | 服务器 20 TPS，客户端插值平滑 |
+| 帧率 | 中端设备 ≥ 30 FPS |
+| 首屏加载 | 本地环境 ≤ 5 秒 |
+| 兼容性 | Chrome / Edge 最新版（WebGL2） |
+
+## 文档
+
+详细需求见 [notes/MMORPG网页游戏需求文档.md](notes/MMORPG网页游戏需求文档.md)。
