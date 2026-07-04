@@ -218,6 +218,25 @@ body,
   background: linear-gradient(#5a9ad4, #2e5e9e);
 }
 
+.hud-bar.exp {
+  height: 10px;
+}
+
+.hud-bar.exp > div {
+  background: linear-gradient(#e6c35a, #b8912e);
+}
+
+.hud-bar.exp span {
+  font-size: 9px;
+  line-height: 10px;
+}
+
+.hud-gold {
+  font-size: 13px;
+  color: #ffd75e;
+  margin-top: 2px;
+}
+
 .hud-bar span {
   position: absolute;
   inset: 0;
@@ -269,4 +288,83 @@ body,
   color: #cdd3ff;
   font-size: 12px;
   pointer-events: none;
+}
+
+/* 死亡遮罩 */
+.death-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: rgba(60, 0, 0, 0.45);
+  color: #fff;
+  font-size: 32px;
+  font-weight: bold;
+  text-shadow: 2px 2px 0 #000;
+  pointer-events: none;
+}
+
+.death-overlay .death-sub {
+  font-size: 16px;
+  font-weight: normal;
+  color: #ffc9c9;
+}
+
+/* ===== 聊天面板 ===== */
+.chat-panel {
+  position: absolute;
+  bottom: 50px;
+  left: 16px;
+  width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.chat-list {
+  max-height: 180px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 6px 8px;
+  background: rgba(10, 14, 42, 0.55);
+  border-radius: 6px;
+  scrollbar-width: thin;
+}
+
+.chat-list:empty {
+  display: none;
+}
+
+.chat-msg {
+  color: #fff;
+  font-size: 13px;
+  line-height: 1.45;
+  text-shadow: 1px 1px 0 #000;
+  word-break: break-all;
+}
+
+.chat-from {
+  color: #8fd4ff;
+}
+
+.chat-input-row input {
+  width: 100%;
+  background: rgba(6, 10, 32, 0.9);
+  border: 2px solid #ffd75e;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 14px;
+  padding: 8px 10px;
+  outline: none;
+}
+
+.chat-hint {
+  color: rgba(205, 211, 255, 0.6);
+  font-size: 11px;
+  padding-left: 4px;
 }

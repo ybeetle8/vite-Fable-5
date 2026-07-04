@@ -1,0 +1,17 @@
+{
+  "slime": {
+    "id": "slime",
+    "name": "史莱姆",
+    "maxHp": 30,
+    "atk": 6,
+    "def": 2,
+    "spd": 2.5,
+    "exp": 8,
+    "gold": 3,
+    "aggroRange": 6,
+    "attackRange": 1.5,
+    "attackCooldown": 1.5,
+    "leashRange": 15,
+    "respawnSec": 8
+  }
+}

@@ -44,13 +44,14 @@ export function statsForLevel(classId, level) {
   }
 }
 
-// 地图配置(第一期只有起始平原, 王城安全区暂用平原一角代替)
+// 地图配置(第一期只有起始平原, 王城安全区暂用平原出生点代替)
 export const MAPS = {
   novice_plain: {
     id: 'novice_plain',
     name: '起始平原',
     size: 100,            // 正方形边长(米), 以原点为中心 [-50, 50]
-    spawn: { x: 0, z: 0 } // 出生点
+    spawn: { x: 0, z: 0 }, // 出生点
+    safeRadius: 8,         // 出生点安全区半径: 怪物不进入/不索敌
   },
 }
 

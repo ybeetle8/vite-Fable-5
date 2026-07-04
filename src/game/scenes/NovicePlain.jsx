@@ -3,8 +3,9 @@
 import { useMemo } from 'react'
 import { Sky } from '@react-three/drei'
 import { MAPS } from '../../../shared/config.js'
-import { OBSTACLES } from './obstacles.js'
+import { OBSTACLES as ALL_OBSTACLES } from '../../../shared/obstacles.js'
 
+const OBSTACLES = ALL_OBSTACLES.novice_plain
 const SIZE = MAPS.novice_plain.size
 
 function Tree({ x, z }) {
@@ -99,10 +100,15 @@ export default function NovicePlain() {
         <planeGeometry args={[SIZE, SIZE]} />
         <meshStandardMaterial color="#6aa84f" />
       </mesh>
-      {/* 出生点石板 */}
+      {/* 出生点石板(安全区标识) */}
       <mesh position={[0, 0.01, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <circleGeometry args={[2.5, 32]} />
         <meshStandardMaterial color="#b7b7a4" />
+      </mesh>
+      {/* 安全区边界圈 */}
+      <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[MAPS.novice_plain.safeRadius - 0.15, MAPS.novice_plain.safeRadius, 64]} />
+        <meshBasicMaterial color="#ffe08a" transparent opacity={0.55} />
       </mesh>
 
       {OBSTACLES.filter((o) => o.type === 'tree').map((o, i) => (

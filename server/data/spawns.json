@@ -1,0 +1,14 @@
+{
+  "novice_plain": [
+    { "type": "slime", "x": 15, "z": 15 },
+    { "type": "slime", "x": 18, "z": 12 },
+    { "type": "slime", "x": -15, "z": 18 },
+    { "type": "slime", "x": -18, "z": 22 },
+    { "type": "slime", "x": 25, "z": -15 },
+    { "type": "slime", "x": 28, "z": -18 },
+    { "type": "slime", "x": -22, "z": -25 },
+    { "type": "slime", "x": -25, "z": -28 },
+    { "type": "slime", "x": 0, "z": 32 },
+    { "type": "slime", "x": 5, "z": -30 }
+  ]
+}

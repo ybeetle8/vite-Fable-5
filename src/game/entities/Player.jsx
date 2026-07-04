@@ -1,17 +1,29 @@
-// 玩家角色: GLB 模型 + Idle/Run 动画切换 + WASD 移动(相对镜头朝向) + 第三人称跟随镜头
+// 玩家角色(M5): 本地预测移动 + 空格普攻 + 攻击/死亡动画 + 复活传送
 import { useEffect, useMemo, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { useGLTF, useAnimations } from '@react-three/drei'
 import * as THREE from 'three'
 import { SkeletonUtils } from 'three-stdlib'
 import { CLASSES, MAPS } from '../../../shared/config.js'
+import { stepPosition } from '../../../shared/movement.js'
+import { ATTACK_RANGE, ATTACK_COOLDOWN } from '../../../shared/combat.js'
 import { useKeyboard } from '../input/useKeyboard.js'
-import { reportPosition } from '../net/socket.js'
-import { OBSTACLES } from '../scenes/obstacles.js'
+import { reportMove, sendAttack } from '../net/socket.js'
+import { worldStore } from '../net/worldStore.js'
+import Nameplate from './Nameplate.jsx'
 
 const UP = new THREE.Vector3(0, 1, 0)
+const SNAP_DIST = 3
+const CORRECT_RATE = 4
 
-export default function Player({ character }) {
+// 职业 -> 攻击动画
+const ATTACK_ANIM = {
+  hero: '1H_Melee_Attack_Slice_Diagonal',
+  mage: 'Spellcast_Shoot',
+  priest: '2H_Melee_Attack_Spin',
+}
+
+export default function Player({ character, posRef }) {
   const cls = CLASSES[character.classId]
   const map = MAPS[character.map]
   const group = useRef()
@@ -19,20 +31,51 @@ export default function Player({ character }) {
   const { camera, gl } = useThree()
 
   const { scene, animations } = useGLTF(cls.model)
-  // SkeletonUtils.clone 保证蒙皮骨骼正确克隆(后续多人共用同一模型必需)
   const model = useMemo(() => SkeletonUtils.clone(scene), [scene])
   const { actions } = useAnimations(animations, group)
 
-  // 运行时状态(不进 React state, 每帧更新)
   const state = useRef({
-    pos: new THREE.Vector3(character.pos.x, 0, character.pos.z),
-    facing: 0,               // 角色朝向(弧度)
+    pos: { x: character.pos.x, z: character.pos.z },
+    facing: 0,
     anim: '',
-    camYaw: Math.PI,          // 镜头水平角
-    camPitch: 0.45,           // 镜头俯仰角
-    camDist: 8,               // 镜头距离
-    lastReport: 0,
+    camYaw: Math.PI,
+    camPitch: 0.45,
+    camDist: 8,
+    lastSent: { dx: 0, dz: 0, facing: 0 },
+    sendCooldown: 0,
+    attackCooldown: 0,
+    attackAnimUntil: 0, // 攻击动画播放期间锁定动画切换
+    dead: false,
   })
+
+  // 空格普攻
+  useEffect(() => {
+    function onKey(e) {
+      if (e.code !== 'Space' || e.repeat) return
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return
+      const s = state.current
+      if (s.dead || s.attackCooldown > 0) return
+
+      const target = worldStore.nearestAliveMonster(s.pos, ATTACK_RANGE + 0.3)
+      if (!target) return
+
+      s.attackCooldown = ATTACK_COOLDOWN
+      // 面向目标
+      s.facing = Math.atan2(target.x - s.pos.x, target.z - s.pos.z)
+      // 播攻击动画(锁 0.5s)
+      const animName = ATTACK_ANIM[character.classId]
+      if (actions[animName]) {
+        const prev = actions[s.anim]
+        actions[animName].reset().setLoop(THREE.LoopOnce).fadeIn(0.05).play()
+        prev?.fadeOut(0.05)
+        s.anim = animName
+        s.attackAnimUntil = performance.now() + 500
+      }
+      sendAttack(target.id)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [actions, character.classId])
 
   // 鼠标右键旋转镜头 + 滚轮缩放
   useEffect(() => {
@@ -74,6 +117,8 @@ export default function Player({ character }) {
   function playAnim(name) {
     const s = state.current
     if (s.anim === name || !actions[name]) return
+    // 攻击动画播放中不被移动动画打断
+    if (performance.now() < s.attackAnimUntil && name !== 'Death_A') return
     const prev = actions[s.anim]
     actions[name].reset().fadeIn(0.15).play()
     prev?.fadeOut(0.15)
@@ -81,80 +126,107 @@ export default function Player({ character }) {
   }
 
   useFrame((_, rawDelta) => {
-    const delta = Math.min(rawDelta, 0.1) // 切后台回来防大步跳跃
+    const delta = Math.min(rawDelta, 0.1)
     const s = state.current
     const k = keys.current
+    s.attackCooldown = Math.max(0, s.attackCooldown - delta)
 
-    // 相对镜头朝向的移动向量
-    let mx = 0
-    let mz = 0
-    if (k.forward) mz -= 1
-    if (k.back) mz += 1
-    if (k.left) mx -= 1
-    if (k.right) mx += 1
-    const moving = mx !== 0 || mz !== 0
-
-    if (moving) {
-      const dir = new THREE.Vector3(mx, 0, mz)
-        .normalize()
-        .applyAxisAngle(UP, s.camYaw)
-      const next = s.pos.clone().addScaledVector(dir, cls.base.spd * delta)
-
-      // 地图边界钳制
-      const half = map.size / 2 - 1
-      next.x = THREE.MathUtils.clamp(next.x, -half, half)
-      next.z = THREE.MathUtils.clamp(next.z, -half, half)
-
-      // 简单圆形障碍碰撞: 推出重叠
-      for (const ob of OBSTACLES) {
-        const dx = next.x - ob.x
-        const dz = next.z - ob.z
-        const distSq = dx * dx + dz * dz
-        const minDist = ob.r + 0.5
-        if (distSq < minDist * minDist && distSq > 0.0001) {
-          const d = Math.sqrt(distSq)
-          next.x = ob.x + (dx / d) * minDist
-          next.z = ob.z + (dz / d) * minDist
-        }
-      }
-
-      s.pos.copy(next)
-      // 平滑转身到移动方向
-      const targetFacing = Math.atan2(dir.x, dir.z)
-      let diff = targetFacing - s.facing
-      while (diff > Math.PI) diff -= Math.PI * 2
-      while (diff < -Math.PI) diff += Math.PI * 2
-      s.facing += diff * Math.min(1, delta * 12)
-      playAnim('Running_A')
-    } else {
+    // 死亡/复活状态来自服务器快照
+    const server = worldStore.getSelfServerPos()
+    const stats = worldStore.getSelfStats()
+    const isDead = (stats?.hp ?? 1) <= 0
+    if (isDead && !s.dead) {
+      s.dead = true
+      playAnim('Death_A')
+    } else if (!isDead && s.dead) {
+      // 复活: 吸附到服务器位置(出生点)
+      s.dead = false
+      if (server) s.pos = { x: server.x, z: server.z }
       playAnim('Idle')
     }
 
-    if (group.current) {
-      group.current.position.copy(s.pos)
-      group.current.rotation.y = s.facing
+    let moving = false
+    let dir = { x: 0, z: 0 }
+
+    if (!s.dead) {
+      let mx = 0
+      let mz = 0
+      if (k.forward) mz -= 1
+      if (k.back) mz += 1
+      if (k.left) mx -= 1
+      if (k.right) mx += 1
+      moving = mx !== 0 || mz !== 0
+
+      if (moving) {
+        const v = new THREE.Vector3(mx, 0, mz).normalize().applyAxisAngle(UP, s.camYaw)
+        dir = { x: v.x, z: v.z }
+        s.pos = stepPosition(s.pos, dir, cls.base.spd, delta, character.map, map.size)
+        const targetFacing = Math.atan2(dir.x, dir.z)
+        let diff = targetFacing - s.facing
+        while (diff > Math.PI) diff -= Math.PI * 2
+        while (diff < -Math.PI) diff += Math.PI * 2
+        s.facing += diff * Math.min(1, delta * 12)
+        playAnim('Running_A')
+      } else {
+        playAnim('Idle')
+      }
+
+      // 服务器权威纠正
+      if (server) {
+        const ex = server.x - s.pos.x
+        const ez = server.z - s.pos.z
+        const err = Math.hypot(ex, ez)
+        if (err > SNAP_DIST) {
+          s.pos = { x: server.x, z: server.z }
+        } else if (!moving && err > 0.02) {
+          const t = Math.min(1, delta * CORRECT_RATE)
+          s.pos = { x: s.pos.x + ex * t, z: s.pos.z + ez * t }
+        }
+      }
     }
 
-    // 第三人称跟随镜头(球面坐标)
+    // 上报移动意图
+    s.sendCooldown -= delta
+    const last = s.lastSent
+    const changed =
+      Math.abs(dir.x - last.dx) > 0.01 ||
+      Math.abs(dir.z - last.dz) > 0.01 ||
+      (moving && Math.abs(s.facing - last.facing) > 0.05)
+    if (changed || (moving && s.sendCooldown <= 0)) {
+      reportMove(dir.x, dir.z, s.facing)
+      s.lastSent = { dx: dir.x, dz: dir.z, facing: s.facing }
+      s.sendCooldown = 0.1
+    }
+
+    if (group.current) {
+      group.current.position.set(s.pos.x, 0, s.pos.z)
+      group.current.rotation.y = s.facing
+    }
+    // 供 DamagePopups 等外部读取自身位置
+    if (posRef) posRef.current = s.pos
+
+    // 第三人称跟随镜头
     const offset = new THREE.Vector3(
       Math.sin(s.camYaw) * Math.cos(s.camPitch),
       Math.sin(s.camPitch),
       Math.cos(s.camYaw) * Math.cos(s.camPitch),
     ).multiplyScalar(s.camDist)
-    camera.position.copy(s.pos).add(offset).add(new THREE.Vector3(0, 1.2, 0))
-    camera.lookAt(s.pos.x, s.pos.y + 1.4, s.pos.z)
-
-    // 每 200ms 上报一次位置(存档用)
-    s.lastReport += delta
-    if (s.lastReport > 0.2) {
-      s.lastReport = 0
-      reportPosition(s.pos.x, s.pos.z)
-    }
+    camera.position.set(s.pos.x + offset.x, offset.y + 1.2, s.pos.z + offset.z)
+    camera.lookAt(s.pos.x, 1.4, s.pos.z)
   })
+
+  const stats = worldStore.getSelfStats()
 
   return (
     <group ref={group}>
       <primitive object={model} />
+      <Nameplate
+        nickname={character.nickname}
+        level={stats?.level ?? character.level}
+        hp={stats?.hp ?? character.hp}
+        maxHp={stats?.maxHp ?? character.hp}
+        color="#ffd75e"
+      />
     </group>
   )
 }

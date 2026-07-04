@@ -1,6 +1,7 @@
 // Socket.IO 客户端封装
 import { io } from 'socket.io-client'
 import { EVT } from '../../../shared/events.js'
+import { worldStore } from './worldStore.js'
 
 let socket = null
 
@@ -11,7 +12,18 @@ export function connectGame(token, handlers = {}) {
     transports: ['websocket'],
   })
 
-  socket.on(EVT.WELCOME, (d) => handlers.onWelcome?.(d))
+  socket.on(EVT.WELCOME, (d) => {
+    worldStore.setSelfId(d.selfId)
+    for (const p of d.players ?? []) worldStore.addRemote(p)
+    worldStore.setInitialMonsters(d.monsters ?? [])
+    handlers.onWelcome?.(d)
+  })
+  socket.on(EVT.WORLD_SNAPSHOT, (snap) => worldStore.applySnapshot(snap))
+  socket.on(EVT.ENTITY_ENTER, (p) => worldStore.addRemote(p))
+  socket.on(EVT.ENTITY_LEAVE, ({ id }) => worldStore.removeRemote(id))
+  socket.on(EVT.COMBAT_RESULT, (ev) => worldStore.applyCombat(ev))
+  socket.on(EVT.PLAYER_UPDATE, (stats) => worldStore.setSelfStats(stats))
+  socket.on(EVT.CHAT_BROADCAST, (msg) => handlers.onChat?.(msg))
   socket.on(EVT.KICKED, (d) => handlers.onKicked?.(d))
   socket.on('connect_error', (e) => handlers.onError?.(e))
   socket.on('disconnect', (reason) => handlers.onDisconnect?.(reason))
@@ -23,12 +35,23 @@ export function getSocket() {
   return socket
 }
 
-// M3 阶段: 客户端定时上报自身位置(供服务器存档), M4 改为输入上报 + 服务器权威
-export function reportPosition(x, z) {
-  socket?.emit(EVT.MOVE, { x, z })
+// 上报移动意图: 方向单位向量 + 朝向
+export function reportMove(dx, dz, facing) {
+  socket?.emit(EVT.MOVE, { dx, dz, facing })
+}
+
+// 请求攻击目标
+export function sendAttack(targetId) {
+  socket?.emit(EVT.ATTACK, { targetId })
+}
+
+// 发送聊天
+export function sendChat(text) {
+  socket?.emit(EVT.CHAT, { text })
 }
 
 export function disconnectGame() {
   socket?.disconnect()
   socket = null
+  worldStore.clear()
 }
