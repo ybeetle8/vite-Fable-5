@@ -1,14 +1,14 @@
-// 玩家角色(M5): 本地预测移动 + 空格普攻 + 攻击/死亡动画 + 复活传送
+// 玩家角色: 本地预测移动 + 空格普攻 + E 键传送 + 攻击/死亡动画
 import { useEffect, useMemo, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { useGLTF, useAnimations } from '@react-three/drei'
 import * as THREE from 'three'
 import { SkeletonUtils } from 'three-stdlib'
-import { CLASSES, MAPS } from '../../../shared/config.js'
+import { CLASSES, MAPS, PORTAL_RANGE } from '../../../shared/config.js'
 import { stepPosition } from '../../../shared/movement.js'
 import { ATTACK_RANGE, ATTACK_COOLDOWN } from '../../../shared/combat.js'
 import { useKeyboard } from '../input/useKeyboard.js'
-import { reportMove, sendAttack } from '../net/socket.js'
+import { reportMove, sendAttack, requestChangeMap } from '../net/socket.js'
 import { worldStore } from '../net/worldStore.js'
 import Nameplate from './Nameplate.jsx'
 
@@ -23,9 +23,10 @@ const ATTACK_ANIM = {
   priest: '2H_Melee_Attack_Spin',
 }
 
-export default function Player({ character, posRef }) {
+// mapId 变化时由 GameScreen 以 key={mapId} 强制重挂, state 随之重置
+export default function Player({ character, mapId, startPos, posRef, onPortalNearby }) {
   const cls = CLASSES[character.classId]
-  const map = MAPS[character.map]
+  const map = MAPS[mapId]
   const group = useRef()
   const keys = useKeyboard()
   const { camera, gl } = useThree()
@@ -35,7 +36,7 @@ export default function Player({ character, posRef }) {
   const { actions } = useAnimations(animations, group)
 
   const state = useRef({
-    pos: { x: character.pos.x, z: character.pos.z },
+    pos: { x: startPos.x, z: startPos.z },
     facing: 0,
     anim: '',
     camYaw: Math.PI,
@@ -46,14 +47,22 @@ export default function Player({ character, posRef }) {
     attackCooldown: 0,
     attackAnimUntil: 0, // 攻击动画播放期间锁定动画切换
     dead: false,
+    nearPortal: false,
   })
 
-  // 空格普攻
+  // 空格普攻 + E 键传送
   useEffect(() => {
     function onKey(e) {
-      if (e.code !== 'Space' || e.repeat) return
+      if (e.repeat) return
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return
       const s = state.current
+
+      if (e.code === 'KeyE') {
+        if (!s.dead && s.nearPortal) requestChangeMap()
+        return
+      }
+
+      if (e.code !== 'Space') return
       if (s.dead || s.attackCooldown > 0) return
 
       const target = worldStore.nearestAliveMonster(s.pos, ATTACK_RANGE + 0.3)
@@ -169,7 +178,7 @@ export default function Player({ character, posRef }) {
       if (moving) {
         const v = new THREE.Vector3(mx, 0, mz).normalize().applyAxisAngle(UP, s.camYaw)
         dir = { x: v.x, z: v.z }
-        s.pos = stepPosition(s.pos, dir, cls.base.spd, delta, character.map, map.size)
+        s.pos = stepPosition(s.pos, dir, cls.base.spd, delta, mapId, map.size)
         const targetFacing = Math.atan2(dir.x, dir.z)
         let diff = targetFacing - s.facing
         while (diff > Math.PI) diff -= Math.PI * 2
@@ -213,6 +222,15 @@ export default function Player({ character, posRef }) {
     }
     // 供 DamagePopups 等外部读取自身位置
     if (posRef) posRef.current = s.pos
+
+    // 传送点靠近检测(通知 HUD 显示提示)
+    const near = (map.portals ?? []).some(
+      (pt) => Math.hypot(pt.x - s.pos.x, pt.z - s.pos.z) < PORTAL_RANGE,
+    )
+    if (near !== s.nearPortal) {
+      s.nearPortal = near
+      onPortalNearby?.(near)
+    }
 
     // 第三人称跟随镜头
     const offset = new THREE.Vector3(

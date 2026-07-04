@@ -24,6 +24,11 @@ export function connectGame(token, handlers = {}) {
   socket.on(EVT.COMBAT_RESULT, (ev) => worldStore.applyCombat(ev))
   socket.on(EVT.PLAYER_UPDATE, (stats) => worldStore.setSelfStats(stats))
   socket.on(EVT.CHAT_BROADCAST, (msg) => handlers.onChat?.(msg))
+  socket.on(EVT.MAP_CHANGED, (d) => {
+    // 清空旧图实体, 装入新图初始状态
+    worldStore.resetEntities(d.players ?? [], d.monsters ?? [])
+    handlers.onMapChanged?.(d)
+  })
   socket.on(EVT.KICKED, (d) => handlers.onKicked?.(d))
   socket.on('connect_error', (e) => handlers.onError?.(e))
   socket.on('disconnect', (reason) => handlers.onDisconnect?.(reason))
@@ -48,6 +53,11 @@ export function sendAttack(targetId) {
 // 发送聊天
 export function sendChat(text) {
   socket?.emit(EVT.CHAT, { text })
+}
+
+// 请求传送(需站在传送点附近, 服务器校验)
+export function requestChangeMap() {
+  socket?.emit(EVT.CHANGE_MAP)
 }
 
 export function disconnectGame() {

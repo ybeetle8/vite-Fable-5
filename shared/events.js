@@ -14,6 +14,7 @@ export const EVT = {
   COMBAT_RESULT: 'combat_result',
   CHAT_BROADCAST: 'chat_broadcast',
   PLAYER_UPDATE: 'player_update',
+  MAP_CHANGED: 'map_changed',       // 切图完成: 下发新图初始状态
   KICKED: 'kicked',                 // 顶号/被踢下线
 }
 

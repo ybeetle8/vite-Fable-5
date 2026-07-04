@@ -1,6 +1,8 @@
 // 世界管理(M5): 权威移动 + 怪物 AI + 战斗结算 + 经验升级 + 死亡复活
 import { EVT, TICK_RATE } from '../../shared/events.js'
-import { MAPS, CLASSES, statsForLevel, expToNext, DEFAULT_MAP } from '../../shared/config.js'
+import {
+  MAPS, CLASSES, statsForLevel, expToNext, RESPAWN_MAP, PORTAL_RANGE,
+} from '../../shared/config.js'
 import { stepPosition, sanitizeDir } from '../../shared/movement.js'
 import { ATTACK_RANGE, ATTACK_COOLDOWN, computeDamage } from '../../shared/combat.js'
 import { saveCharacter } from '../auth/accounts.js'
@@ -49,6 +51,34 @@ function pushSelfUpdate(p) {
     atk: stats.atk,
     def: stats.def,
   })
+}
+
+// 把玩家移到指定地图指定位置: 换 Room + 双向 enter/leave + 下发新图状态
+function movePlayerToMap(p, mapId, x, z) {
+  const oldMap = p.character.map
+  p.moving = false
+  p.dir = { x: 0, z: 0 }
+  p.character.map = mapId
+  p.character.pos = { x, z }
+
+  if (oldMap !== mapId) {
+    p.socket.leave(oldMap)
+    ioRef.to(oldMap).emit(EVT.ENTITY_LEAVE, { id: p.username })
+    p.socket.join(mapId)
+  }
+  p.socket.emit(EVT.MAP_CHANGED, {
+    map: mapId,
+    x,
+    z,
+    players: playersInMap(mapId)
+      .filter((o) => o.username !== p.username)
+      .map(publicState),
+    monsters: getMonsters(mapId).map(monsterPublicState),
+  })
+  if (oldMap !== mapId) {
+    p.socket.to(mapId).emit(EVT.ENTITY_ENTER, publicState(p))
+  }
+  saveCharacter(p.username, snapshotForSave(p))
 }
 
 export function onPlayerConnect(io, socket, username, character) {
@@ -121,6 +151,20 @@ export function onPlayerConnect(io, socket, username, character) {
     if (killed) {
       grantReward(player, m.cfg)
     }
+  })
+
+  // 传送切图: 校验玩家在传送点附近
+  socket.on(EVT.CHANGE_MAP, () => {
+    if (player.character.hp <= 0) return
+    const map = MAPS[player.character.map]
+    const portal = (map.portals ?? []).find(
+      (pt) =>
+        Math.hypot(pt.x - player.character.pos.x, pt.z - player.character.pos.z) <
+        PORTAL_RANGE + 0.5,
+    )
+    if (!portal || !MAPS[portal.to]) return
+    movePlayerToMap(player, portal.to, portal.tx, portal.tz)
+    console.log(`[world] ${character.nickname} 传送: ${map.name} -> ${MAPS[portal.to].name}`)
   })
 
   // 世界聊天: 长度/频率限制
@@ -213,18 +257,24 @@ function resolveMonsterAttack(m, target) {
   }
 }
 
-// 玩家复活: 回出生点满状态
+// 玩家复活: 回王城(教会)满状态, 跨图死亡会切图
 function respawnPlayer(p) {
   const stats = playerStats(p)
   p.character.hp = stats.maxHp
   p.character.mp = stats.maxMp
-  p.character.pos = { ...MAPS[DEFAULT_MAP].spawn }
+  const spawn = MAPS[RESPAWN_MAP].spawn
+  const sameMap = p.character.map === RESPAWN_MAP
   ioRef.to(p.character.map).emit(EVT.COMBAT_RESULT, {
     kind: 'player_respawn',
     playerId: p.username,
-    x: p.character.pos.x,
-    z: p.character.pos.z,
+    x: spawn.x,
+    z: spawn.z,
   })
+  if (sameMap) {
+    p.character.pos = { ...spawn }
+  } else {
+    movePlayerToMap(p, RESPAWN_MAP, spawn.x, spawn.z)
+  }
   pushSelfUpdate(p)
 }
 

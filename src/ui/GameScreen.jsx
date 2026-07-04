@@ -1,10 +1,10 @@
-// 游戏主画面: 3D Canvas + 远程玩家 + 怪物 + 飘字 + HUD
+// 游戏主画面: 3D Canvas + 地图切换 + 远程玩家 + 怪物 + 飘字 + HUD
 import { Suspense, useEffect, useRef, useState, useSyncExternalStore, useCallback } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { CLASSES, MAPS } from '../../shared/config.js'
 import { connectGame, disconnectGame } from '../game/net/socket.js'
 import { worldStore } from '../game/net/worldStore.js'
-import NovicePlain from '../game/scenes/NovicePlain.jsx'
+import GameMap from '../game/scenes/GameMap.jsx'
 import Player from '../game/entities/Player.jsx'
 import RemotePlayer from '../game/entities/RemotePlayer.jsx'
 import Monster from '../game/entities/Monster.jsx'
@@ -43,6 +43,14 @@ function useSelfStats() {
 
 export default function GameScreen({ token, character, onLogout }) {
   const [status, setStatus] = useState('connecting')
+  // 当前地图与本图起始位置; 切图时更新并触发场景/玩家重挂
+  const [mapState, setMapState] = useState({
+    mapId: character.map,
+    pos: { x: character.pos.x, z: character.pos.z },
+    seq: 0, // 同图传送(复活回城时已在王城)也要重挂
+  })
+  const [loading, setLoading] = useState(false)
+  const [nearPortal, setNearPortal] = useState(false)
   const { remotes, monsters } = useEntityIds()
   const stats = useSelfStats()
   const cls = CLASSES[character.classId]
@@ -52,7 +60,21 @@ export default function GameScreen({ token, character, onLogout }) {
 
   useEffect(() => {
     connectGame(token, {
-      onWelcome: () => setStatus('online'),
+      onWelcome: (d) => {
+        setStatus('online')
+        setMapState({
+          mapId: d.character.map,
+          pos: { x: d.character.pos.x, z: d.character.pos.z },
+          seq: 0,
+        })
+      },
+      onMapChanged: (d) => {
+        // 短暂 Loading 遮罩过渡, 掩盖场景重建
+        setLoading(true)
+        setNearPortal(false)
+        setMapState((prev) => ({ mapId: d.map, pos: { x: d.x, z: d.z }, seq: prev.seq + 1 }))
+        setTimeout(() => setLoading(false), 500)
+      },
       onKicked: () => setStatus('kicked'),
       onDisconnect: () => setStatus((s) => (s === 'kicked' ? s : 'offline')),
       onError: () => setStatus('offline'),
@@ -81,13 +103,21 @@ export default function GameScreen({ token, character, onLogout }) {
   const expNext = stats?.expNext ?? 1
   const gold = stats?.gold ?? character.gold
   const isDead = hp <= 0
+  const mapKey = `${mapState.mapId}#${mapState.seq}`
 
   return (
     <div className="game-root">
       <Canvas shadows camera={{ fov: 55, position: [0, 6, 10] }}>
         <Suspense fallback={null}>
-          <NovicePlain />
-          <Player character={character} posRef={selfPosRef} />
+          <GameMap key={`map-${mapKey}`} mapId={mapState.mapId} />
+          <Player
+            key={`player-${mapKey}`}
+            character={character}
+            mapId={mapState.mapId}
+            startPos={mapState.pos}
+            posRef={selfPosRef}
+            onPortalNearby={setNearPortal}
+          />
           {remotes.map((id) => (
             <RemotePlayer key={id} id={id} />
           ))}
@@ -119,28 +149,40 @@ export default function GameScreen({ token, character, onLogout }) {
       </div>
 
       <div className="hud-top-right">
-        <div>{MAPS[character.map].name}</div>
+        <div>{MAPS[mapState.mapId].name}</div>
         <div className={`hud-status ${status}`}>
           {status === 'online'
-            ? `在线 ${remotes.length + 1} 人`
+            ? `本图 ${remotes.length + 1} 人`
             : status === 'connecting'
               ? '连接中…'
               : '连接断开'}
         </div>
       </div>
 
+      {/* 传送提示 */}
+      {nearPortal && !isDead && (
+        <div className="portal-hint">按 E 传送</div>
+      )}
+
       {/* 死亡遮罩 */}
       {isDead && (
         <div className="death-overlay">
           <div>你被击倒了…</div>
-          <div className="death-sub">3 秒后在出生点复活</div>
+          <div className="death-sub">3 秒后在王城复活</div>
+        </div>
+      )}
+
+      {/* 切图 Loading */}
+      {loading && (
+        <div className="map-loading">
+          <div>{MAPS[mapState.mapId].name}</div>
         </div>
       )}
 
       <ChatPanel messagesRef={chatSinkRef} />
 
       <div className="hud-bottom">
-        WASD 移动 · 空格 攻击 · Enter 聊天 · 右键拖动旋转镜头 · 滚轮缩放
+        WASD 移动 · 空格 攻击 · E 传送 · Enter 聊天 · 右键旋转镜头
       </div>
     </div>
   )

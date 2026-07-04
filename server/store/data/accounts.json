@@ -1,39 +1,20 @@
 {
-  "11": {
-    "username": "11",
-    "passwordHash": "$2b$10$CfCHYy0WGKBW2zSSDYgQ/u9wsgpe.KRbLb1XJHOA1nFCgFBSMNJN2",
-    "createdAt": "2026-07-04T15:54:01.202Z",
+  "map_test_a": {
+    "username": "map_test_a",
+    "passwordHash": "$2b$10$ReGBN9VlupUAmaDqvWWM/uxcKU0Eu3SUuNsdLzr2LECSLX/qjKEhu",
+    "createdAt": "2026-07-04T16:16:19.868Z",
     "character": {
-      "nickname": "11",
+      "nickname": "旅人甲",
       "classId": "hero",
       "level": 1,
       "exp": 0,
       "gold": 0,
       "hp": 120,
       "mp": 30,
-      "map": "novice_plain",
+      "map": "castle_town",
       "pos": {
         "x": 0,
         "z": 0
-      }
-    }
-  },
-  "22": {
-    "username": "22",
-    "passwordHash": "$2b$10$bmzgCmjSWrJJg4KCX/ZZUOb3syoe4JmvWVLpcMpdFXD8rPDExKx8O",
-    "createdAt": "2026-07-04T15:54:21.685Z",
-    "character": {
-      "nickname": "22",
-      "classId": "priest",
-      "level": 1,
-      "exp": 16,
-      "gold": 6,
-      "hp": 95,
-      "mp": 50,
-      "map": "novice_plain",
-      "pos": {
-        "x": 3.5390023458481865,
-        "z": 2.2811805537841052
       }
     }
   }

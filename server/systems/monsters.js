@@ -66,9 +66,10 @@ export function monsterPublicState(m) {
 
 const dist = (a, b) => Math.hypot(a.x - b.x, a.z - b.z)
 
-// 玩家是否在出生点安全区内(怪物不索敌/追到边缘即放弃)
+// 玩家是否处于安全状态(全图安全 或 出生点安全区内)
 function inSafeZone(mapId, pos) {
   const map = MAPS[mapId]
+  if (map.safe) return true
   if (!map.safeRadius) return false
   return dist(pos, map.spawn) < map.safeRadius
 }

@@ -9,6 +9,41 @@
     { "type": "slime", "x": -22, "z": -25 },
     { "type": "slime", "x": -25, "z": -28 },
     { "type": "slime", "x": 0, "z": 32 },
-    { "type": "slime", "x": 5, "z": -30 }
+    { "type": "slime", "x": 5, "z": 30 },
+    { "type": "bigbeak", "x": 35, "z": 25 },
+    { "type": "bigbeak", "x": 38, "z": 22 },
+    { "type": "bigbeak", "x": -35, "z": 35 },
+    { "type": "bigbeak", "x": -38, "z": 32 }
+  ],
+  "mist_forest": [
+    { "type": "mothvenom", "x": -15, "z": -12 },
+    { "type": "mothvenom", "x": 18, "z": -10 },
+    { "type": "mothvenom", "x": -20, "z": 5 },
+    { "type": "mothvenom", "x": 22, "z": 8 },
+    { "type": "mothvenom", "x": 0, "z": 15 },
+    { "type": "mothvenom", "x": -10, "z": 28 },
+    { "type": "treant", "x": 30, "z": 28 },
+    { "type": "treant", "x": -30, "z": 25 },
+    { "type": "treant", "x": 15, "z": 35 },
+    { "type": "treant", "x": -33, "z": -18 }
+  ],
+  "rock_cavern": [
+    { "type": "skeleton", "x": -14, "z": -8 },
+    { "type": "skeleton", "x": 16, "z": -5 },
+    { "type": "skeleton", "x": -20, "z": 8 },
+    { "type": "skeleton", "x": 22, "z": 12 },
+    { "type": "skeleton", "x": 0, "z": 10 },
+    { "type": "skeleton", "x": -6, "z": 22 },
+    { "type": "golem", "x": 18, "z": 25 },
+    { "type": "golem", "x": -20, "z": 26 },
+    { "type": "golem", "x": 8, "z": 28 }
+  ],
+  "demon_castle": [
+    { "type": "demon", "x": -14, "z": -5 },
+    { "type": "demon", "x": 14, "z": -5 },
+    { "type": "demon", "x": -16, "z": 8 },
+    { "type": "demon", "x": 16, "z": 8 },
+    { "type": "demon", "x": -6, "z": 16 },
+    { "type": "demon", "x": 6, "z": 16 }
   ]
 }

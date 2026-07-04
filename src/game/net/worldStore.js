@@ -78,6 +78,19 @@ export const worldStore = {
     notify(entityListeners)
   },
 
+  // 切图: 清空旧图实体并装入新图初始状态
+  resetEntities(playerList, monsterList) {
+    remotes.clear()
+    monsters.clear()
+    selfServerPos = null
+    const t = Date.now()
+    for (const p of playerList) {
+      if (p.id !== selfId) pushBuffer(remotes, p, t)
+    }
+    for (const m of monsterList) pushBuffer(monsters, m, t)
+    notify(entityListeners)
+  },
+
   applyCombat(ev) {
     // 即时修正实体血量(不等下一个快照)
     if (ev.kind === 'player_hit_monster') {
