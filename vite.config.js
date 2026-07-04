@@ -9,10 +9,11 @@ export default defineConfig({
     babel({ presets: [reactCompilerPreset()] })
   ],
   server: {
+    port: 62001,
     proxy: {
-      '/api': 'http://localhost:3001',
+      '/api': 'http://localhost:62002',
       '/socket.io': {
-        target: 'http://localhost:3001',
+        target: 'http://localhost:62002',
         ws: true,
       },
     },

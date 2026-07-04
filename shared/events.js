@@ -18,5 +18,5 @@ export const EVT = {
   KICKED: 'kicked',                 // 顶号/被踢下线
 }
 
-export const SERVER_PORT = 3001
+export const SERVER_PORT = 62002
 export const TICK_RATE = 20 // 每秒 Tick 次数

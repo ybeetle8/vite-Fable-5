@@ -7,7 +7,7 @@
 // 运行: 先启动服务器(npm run server), 再 node test-server/test-sync.js
 import { io } from 'socket.io-client'
 
-const BASE = 'http://localhost:3001'
+const BASE = 'http://localhost:62002'
 const results = []
 
 function check(name, ok, detail = '') {

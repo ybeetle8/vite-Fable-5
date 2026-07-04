@@ -1,4 +1,23 @@
 {
+  "11": {
+    "username": "11",
+    "passwordHash": "$2b$10$buosG1VwX.yuX4KUcr.txewDlArd0zpCXsPBofMTwtHGs4ezfMZ4.",
+    "createdAt": "2026-07-04T23:27:21.641Z",
+    "character": {
+      "nickname": "11",
+      "classId": "hero",
+      "level": 3,
+      "exp": 92,
+      "gold": 66,
+      "hp": 156,
+      "mp": 38,
+      "map": "castle_town",
+      "pos": {
+        "x": 3.1102451352120917,
+        "z": 12.837606242780302
+      }
+    }
+  },
   "33": {
     "username": "33",
     "passwordHash": "$2b$10$kefsnVds4kw5ZlOXuV.CouOihvKxaXVGvaEWS02BEi9qXZRHNPrXW",
