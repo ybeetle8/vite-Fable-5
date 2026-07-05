@@ -13,9 +13,15 @@
       "mp": 38,
       "map": "castle_town",
       "pos": {
-        "x": 3.1102451352120917,
-        "z": 12.837606242780302
-      }
+        "x": 1.4902451352120916,
+        "z": 11.8026062427803
+      },
+      "equipment": {
+        "weapon": "copper_sword",
+        "armor": "leather_armor",
+        "shield": "wooden_shield"
+      },
+      "inventory": []
     }
   },
   "33": {
@@ -32,9 +38,193 @@
       "mp": 60,
       "map": "novice_plain",
       "pos": {
+        "x": 2.1994648250315656,
+        "z": -44.59553517496845
+      },
+      "equipment": {
+        "weapon": "oak_staff",
+        "armor": "cloth_armor",
+        "shield": "wooden_shield"
+      },
+      "inventory": []
+    }
+  },
+  "sync_test_a": {
+    "username": "sync_test_a",
+    "passwordHash": "$2b$10$4dSYj3ckGDl2jH.RLKsBlOrozDex/00eTJlO41B3qqiVc1xo4txDe",
+    "createdAt": "2026-07-05T00:50:22.897Z",
+    "character": {
+      "nickname": "测试甲",
+      "classId": "hero",
+      "level": 1,
+      "exp": 0,
+      "gold": 0,
+      "hp": 120,
+      "mp": 30,
+      "map": "castle_town",
+      "pos": {
+        "x": 9.989999999999998,
+        "z": 0
+      },
+      "equipment": {
+        "weapon": "copper_sword",
+        "armor": "leather_armor",
+        "shield": "wooden_shield"
+      },
+      "inventory": []
+    }
+  },
+  "sync_test_b": {
+    "username": "sync_test_b",
+    "passwordHash": "$2b$10$XBprkkzcty.tmcw9ReV7G.0ITf8tn9k28eLV7ILzzPbkaojRdte2e",
+    "createdAt": "2026-07-05T00:50:23.343Z",
+    "character": {
+      "nickname": "测试乙",
+      "classId": "mage",
+      "level": 1,
+      "exp": 0,
+      "gold": 0,
+      "hp": 80,
+      "mp": 60,
+      "map": "castle_town",
+      "pos": {
         "x": 0,
-        "z": -44
-      }
+        "z": 0
+      },
+      "equipment": {
+        "weapon": "oak_staff",
+        "armor": "cloth_armor",
+        "shield": "wooden_shield"
+      },
+      "inventory": []
+    }
+  },
+  "map_test_a": {
+    "username": "map_test_a",
+    "passwordHash": "$2b$10$/CIJZ96HdFFFLS7N6AT2cOAfxOBZb.a/Mlh8TWUZfGF5bqnxPvVEq",
+    "createdAt": "2026-07-05T00:50:28.106Z",
+    "character": {
+      "nickname": "旅人甲",
+      "classId": "hero",
+      "level": 1,
+      "exp": 0,
+      "gold": 0,
+      "hp": 120,
+      "mp": 30,
+      "map": "castle_town",
+      "pos": {
+        "x": 0,
+        "z": 0
+      },
+      "equipment": {
+        "weapon": "copper_sword",
+        "armor": "leather_armor",
+        "shield": "wooden_shield"
+      },
+      "inventory": []
+    }
+  },
+  "map_test_b": {
+    "username": "map_test_b",
+    "passwordHash": "$2b$10$JXEymCIJN3NDVDq67699yepyjIf5ySW0NlAazCmwzsfMVcBz4vo4.",
+    "createdAt": "2026-07-05T00:50:35.641Z",
+    "character": {
+      "nickname": "旅人乙",
+      "classId": "mage",
+      "level": 1,
+      "exp": 0,
+      "gold": 0,
+      "hp": 80,
+      "mp": 60,
+      "map": "castle_town",
+      "pos": {
+        "x": 0,
+        "z": 24
+      },
+      "equipment": {
+        "weapon": "oak_staff",
+        "armor": "cloth_armor",
+        "shield": "wooden_shield"
+      },
+      "inventory": []
+    }
+  },
+  "aa": {
+    "username": "aa",
+    "passwordHash": "$2b$10$DGQJeGOLTsckAgLcDXaF5u5ouAU7AYfWJBCynhMzkeE/U9MPzbN4m",
+    "createdAt": "2026-07-05T01:29:25.073Z",
+    "character": {
+      "nickname": "勇1",
+      "classId": "hero",
+      "level": 2,
+      "exp": 4,
+      "gold": 9,
+      "hp": 135,
+      "mp": 34,
+      "map": "novice_plain",
+      "pos": {
+        "x": 20.54854525072734,
+        "z": -23.042937072054112
+      },
+      "equipment": {
+        "weapon": "copper_sword",
+        "armor": "leather_armor",
+        "shield": "wooden_shield"
+      },
+      "inventory": []
+    }
+  },
+  "bb": {
+    "username": "bb",
+    "passwordHash": "$2b$10$XIHnsjSSCrRdjE0.CX3sBOQ5TAGYbPG87OMjlB0vT9ZmNUTOZnSoS",
+    "createdAt": "2026-07-05T01:31:19.314Z",
+    "character": {
+      "nickname": "bb",
+      "classId": "mage",
+      "level": 2,
+      "exp": 52,
+      "gold": 27,
+      "hp": 90,
+      "mp": 68,
+      "map": "novice_plain",
+      "pos": {
+        "x": 18.42534973726472,
+        "z": -23.57436022297891
+      },
+      "equipment": {
+        "weapon": "oak_staff",
+        "armor": "cloth_armor",
+        "shield": "wooden_shield"
+      },
+      "inventory": [
+        "cloth_armor",
+        "cloth_armor"
+      ]
+    }
+  },
+  "cc": {
+    "username": "cc",
+    "passwordHash": "$2b$10$OnttzvYVZzmOB0IBP8wpA.oJTflCpeKl2Zvr0L/AkWxfkqHotGQme",
+    "createdAt": "2026-07-05T01:33:45.438Z",
+    "character": {
+      "nickname": "cc",
+      "classId": "priest",
+      "level": 1,
+      "exp": 16,
+      "gold": 6,
+      "hp": 94,
+      "mp": 39,
+      "map": "novice_plain",
+      "pos": {
+        "x": 19.851112716409723,
+        "z": -26.609755608171824
+      },
+      "equipment": {
+        "weapon": "wooden_mace",
+        "armor": "cloth_armor",
+        "shield": "wooden_shield"
+      },
+      "inventory": []
     }
   }
 }

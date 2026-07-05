@@ -7,6 +7,7 @@ import { SkeletonUtils } from 'three-stdlib'
 import { CLASSES } from '../../../shared/config.js'
 import { worldStore } from '../net/worldStore.js'
 import Nameplate from './Nameplate.jsx'
+import BuffRing from './BuffRing.jsx'
 
 // 渲染延迟: 落后服务器 2 个快照(100ms), 保证总有两帧可插值
 const RENDER_DELAY_MS = 100
@@ -82,6 +83,7 @@ export default function RemotePlayer({ id }) {
   return (
     <group ref={group} position={[info.x, 0, info.z]}>
       <primitive object={model} />
+      <BuffRing getBuffs={() => worldStore.getRemote(id)?.info.buffs} />
       <Nameplate
         nickname={info.nickname}
         level={info.level}

@@ -33,6 +33,7 @@ function createMonster(mapId, spawn) {
     patrolDir: { x: 0, z: 0 },
     respawnTimer: 0,
     moving: false,
+    debuffs: {},           // 减益: { slow: { remain, factor } }
   }
 }
 
@@ -61,6 +62,7 @@ export function monsterPublicState(m) {
     hp: m.hp,
     maxHp: m.cfg.maxHp,
     dead: m.state === 'dead',
+    slowed: !!m.debuffs.slow,
   }
 }
 
@@ -89,6 +91,7 @@ export function updateMonsters(mapId, players, delta) {
         m.pos = { ...m.home }
         m.state = 'idle'
         m.target = null
+        m.debuffs = {}
         m.stateTimer = 2 + Math.random() * 3
         events.push({ kind: 'respawn', monster: monsterPublicState(m) })
       }
@@ -97,6 +100,13 @@ export function updateMonsters(mapId, players, delta) {
 
     m.attackTimer = Math.max(0, m.attackTimer - delta)
     m.moving = false
+
+    // Debuff 计时递减, 到期移除
+    for (const key of Object.keys(m.debuffs)) {
+      m.debuffs[key].remain -= delta
+      if (m.debuffs[key].remain <= 0) delete m.debuffs[key]
+    }
+    const spdMul = m.debuffs.slow?.factor ?? 1
 
     // 索敌: 找 aggro 范围内最近的活玩家(安全区内玩家不被索敌)
     if (m.state === 'idle' || m.state === 'patrol') {
@@ -138,7 +148,7 @@ export function updateMonsters(mapId, players, delta) {
           const len = Math.hypot(dx, dz)
           m.patrolDir = { x: dx / len, z: dz / len }
         }
-        m.pos = stepPosition(m.pos, m.patrolDir, m.cfg.spd * 0.5, delta, mapId, mapSize)
+        m.pos = stepPosition(m.pos, m.patrolDir, m.cfg.spd * 0.5 * spdMul, delta, mapId, mapSize)
         m.facing = Math.atan2(m.patrolDir.x, m.patrolDir.z)
         m.moving = true
         if (m.stateTimer <= 0) {
@@ -169,7 +179,7 @@ export function updateMonsters(mapId, players, delta) {
         const dx = target.character.pos.x - m.pos.x
         const dz = target.character.pos.z - m.pos.z
         const dir = { x: dx / d, z: dz / d }
-        m.pos = stepPosition(m.pos, dir, m.cfg.spd, delta, mapId, mapSize)
+        m.pos = stepPosition(m.pos, dir, m.cfg.spd * spdMul, delta, mapId, mapSize)
         m.facing = Math.atan2(dir.x, dir.z)
         m.moving = true
         break
@@ -207,7 +217,7 @@ export function updateMonsters(mapId, players, delta) {
           break
         }
         const dir = { x: (m.home.x - m.pos.x) / d, z: (m.home.z - m.pos.z) / d }
-        m.pos = stepPosition(m.pos, dir, m.cfg.spd * 1.5, delta, mapId, mapSize)
+        m.pos = stepPosition(m.pos, dir, m.cfg.spd * 1.5 * spdMul, delta, mapId, mapSize)
         m.facing = Math.atan2(dir.x, dir.z)
         m.moving = true
         break

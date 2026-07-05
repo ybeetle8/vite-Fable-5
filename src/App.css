@@ -412,3 +412,335 @@ body,
   font-size: 11px;
   padding-left: 4px;
 }
+
+/* ---------- M8: 技能栏 ---------- */
+
+.skill-bar {
+  position: absolute;
+  bottom: 44px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  z-index: 10;
+}
+
+.skill-slots {
+  display: flex;
+  gap: 10px;
+}
+
+.skill-slot {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  background: rgba(16, 21, 64, 0.9);
+  border: 2px solid #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 0 2px #101540;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  overflow: hidden;
+  cursor: default;
+  user-select: none;
+}
+
+.skill-slot.no-mp {
+  filter: grayscale(0.8) brightness(0.7);
+}
+
+.skill-slot.shake {
+  animation: skill-shake 0.3s;
+}
+
+@keyframes skill-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  50% { transform: translateX(4px); }
+  75% { transform: translateX(-2px); }
+}
+
+.skill-icon {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.skill-name {
+  font-size: 10px;
+  color: #cdd3ff;
+  text-shadow: 1px 1px 0 #000;
+}
+
+.skill-key {
+  position: absolute;
+  top: 2px;
+  left: 5px;
+  font-size: 11px;
+  font-weight: bold;
+  color: #ffd75e;
+  text-shadow: 1px 1px 0 #000;
+}
+
+.skill-cd-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.65);
+  pointer-events: none;
+}
+
+.skill-cd-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 16px;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 1px 1px 2px #000;
+}
+
+.skill-hint {
+  position: absolute;
+  top: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: bold;
+  color: #ff6b6b;
+  text-shadow: 1px 1px 0 #000;
+  z-index: 2;
+}
+
+.cast-bar {
+  position: relative;
+  width: 180px;
+  height: 14px;
+  background: rgba(6, 10, 32, 0.85);
+  border: 2px solid #fff;
+  border-radius: 7px;
+  overflow: hidden;
+}
+
+.cast-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #7ec8f0, #b39dff);
+  transition: width 0.08s linear;
+}
+
+.cast-bar-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: #fff;
+  text-shadow: 1px 1px 0 #000;
+}
+
+/* ---------- M8: HUD Buff 图标 ---------- */
+
+.hud-buffs {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.hud-buff {
+  background: rgba(255, 215, 94, 0.18);
+  border: 1px solid #ffd75e;
+  border-radius: 5px;
+  padding: 1px 6px;
+  font-size: 12px;
+  color: #ffd75e;
+  text-shadow: 1px 1px 0 #000;
+}
+
+/* ---------- M8: 角色面板 ---------- */
+
+.char-panel {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 520px;
+  max-height: 80vh;
+  overflow-y: auto;
+  z-index: 20;
+  gap: 12px;
+}
+
+.char-panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #ffd75e;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.char-close {
+  background: none;
+  border: 1px solid #4a5490;
+  border-radius: 5px;
+  color: #cdd3ff;
+  font-size: 12px;
+  padding: 3px 8px;
+  cursor: pointer;
+}
+
+.char-close:hover {
+  border-color: #ffd75e;
+  color: #ffd75e;
+}
+
+.char-panel-body {
+  display: flex;
+  gap: 18px;
+}
+
+.char-stats {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.char-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: #cdd3ff;
+  border-bottom: 1px solid rgba(74, 84, 144, 0.4);
+  padding: 3px 2px;
+}
+
+.char-row b {
+  color: #fff;
+}
+
+.char-row.buffed b {
+  color: #ffd75e;
+}
+
+.char-bonus {
+  font-style: normal;
+  font-size: 12px;
+  color: #7cff9a;
+  margin-left: 4px;
+}
+
+.char-equips {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.equip-slot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(6, 10, 32, 0.7);
+  border: 2px solid #4a5490;
+  border-radius: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.equip-slot:hover {
+  border-color: #ffd75e;
+}
+
+.equip-slot.empty {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.equip-icon {
+  font-size: 22px;
+  width: 30px;
+  text-align: center;
+}
+
+.equip-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.equip-label {
+  font-size: 11px;
+  color: #8fa1ff;
+}
+
+.equip-name {
+  font-size: 14px;
+  color: #fff;
+}
+
+.equip-stat {
+  font-size: 12px;
+  color: #7cff9a;
+}
+
+.char-inv-head {
+  font-size: 13px;
+  color: #8fa1ff;
+  border-top: 2px solid rgba(74, 84, 144, 0.5);
+  padding-top: 10px;
+}
+
+.char-inv {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  min-height: 44px;
+}
+
+.char-inv-empty {
+  grid-column: 1 / -1;
+  color: rgba(205, 211, 255, 0.5);
+  font-size: 12px;
+  text-align: center;
+  padding: 12px 0;
+}
+
+.inv-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(6, 10, 32, 0.7);
+  border: 2px solid #4a5490;
+  border-radius: 6px;
+  padding: 6px 8px;
+  cursor: pointer;
+}
+
+.inv-item:hover {
+  border-color: #ffd75e;
+}
+
+.inv-item.unusable {
+  filter: grayscale(0.9) brightness(0.6);
+  cursor: not-allowed;
+}
+
+.inv-icon {
+  font-size: 16px;
+}
+
+.inv-name {
+  font-size: 12px;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

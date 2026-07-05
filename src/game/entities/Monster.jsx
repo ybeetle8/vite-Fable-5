@@ -290,8 +290,14 @@ export default function Monster({ id }) {
     const base = look.float ?? 0
     group.current.position.y = base + Math.abs(Math.sin(bounce.current)) * look.bob
 
-    // 受击闪红
-    material.color.set(performance.now() < flashUntil.current ? FLASH_COLOR : look.color)
+    // 受击闪红 > 冰冻染蓝 > 原色
+    if (performance.now() < flashUntil.current) {
+      material.color.set(FLASH_COLOR)
+    } else if (info.slowed) {
+      material.color.set('#7ec8f0')
+    } else {
+      material.color.set(look.color)
+    }
   })
 
   if (!entry) return null

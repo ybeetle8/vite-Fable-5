@@ -7,9 +7,14 @@ const monsters = new Map() // id -> { info, buffer }
 let selfServerPos = null
 let selfId = null
 let selfStats = null       // player_update 推送的自身属性
+let selfInventory = null   // inventory_update 推送的装备与背包
+const skillCdMap = new Map() // skillId -> 冷却结束时间戳(本地乐观, fail 时回滚)
 const entityListeners = new Set() // 实体增删
 const statsListeners = new Set()  // 自身属性变化
 const combatListeners = new Set() // 战斗事件(每条转发)
+const skillListeners = new Set()    // skill_result 事件(特效层)
+const skillUiListeners = new Set()  // 技能栏 UI(冷却变化/施法提示)
+const inventoryListeners = new Set() // 装备背包变化
 
 const BUFFER_MAX = 10
 
@@ -101,16 +106,50 @@ export const worldStore = {
     } else if (ev.kind === 'monster_hit_player') {
       const r = remotes.get(ev.targetId)
       if (r) r.info = { ...r.info, hp: ev.hp, dead: ev.killed }
+    } else if (ev.kind === 'player_heal') {
+      const r = remotes.get(ev.targetId)
+      if (r) r.info = { ...r.info, hp: ev.hp }
     }
     notify(combatListeners, ev)
   },
 
+  // skill_result: fail 回滚本地冷却, cast/hit 转发给特效层与技能栏
+  applySkill(ev) {
+    if (ev.phase === 'fail') {
+      skillCdMap.delete(ev.skillId)
+      notify(skillUiListeners, ev)
+      return
+    }
+    notify(skillListeners, ev)
+    notify(skillUiListeners, ev)
+  },
+
+  setInventory(d) {
+    selfInventory = d
+    notify(inventoryListeners, d)
+  },
+
+  // 本地乐观冷却: 发包即进 CD, 收到 fail 回滚
+  markSkillUsed(skillId, cdSec) {
+    skillCdMap.set(skillId, Date.now() + cdSec * 1000)
+    notify(skillUiListeners, { phase: 'local_cd', skillId })
+  },
+
+  skillReadyAt: (skillId) => skillCdMap.get(skillId) ?? 0,
+
+  // 技能栏提示(MP 不足/冷却中/没有目标)
+  emitSkillHint(skillId, text) {
+    notify(skillUiListeners, { phase: 'hint', skillId, text })
+  },
+
   setSelfStats(stats) {
-    selfStats = stats
+    selfStats = { ...stats, t: Date.now() } // 记录接收时刻, 供 buff 剩余时间本地倒计时
     notify(statsListeners)
   },
 
   getSelfStats: () => selfStats,
+  getSelfInventory: () => selfInventory,
+  getSelfId: () => selfId,
   getRemote: (id) => remotes.get(id),
   remoteIds: () => [...remotes.keys()],
   getMonster: (id) => monsters.get(id),
@@ -137,6 +176,8 @@ export const worldStore = {
     monsters.clear()
     selfServerPos = null
     selfStats = null
+    selfInventory = null
+    skillCdMap.clear()
     notify(entityListeners)
   },
 
@@ -151,6 +192,18 @@ export const worldStore = {
   subscribeCombat(fn) {
     combatListeners.add(fn)
     return () => combatListeners.delete(fn)
+  },
+  subscribeSkill(fn) {
+    skillListeners.add(fn)
+    return () => skillListeners.delete(fn)
+  },
+  subscribeSkillUi(fn) {
+    skillUiListeners.add(fn)
+    return () => skillUiListeners.delete(fn)
+  },
+  subscribeInventory(fn) {
+    inventoryListeners.add(fn)
+    return () => inventoryListeners.delete(fn)
   },
 }
 

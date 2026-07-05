@@ -27,6 +27,14 @@ function toPopup(ev, selfId, selfPos) {
     if (!r) return null
     return { x: r.info.x, z: r.info.z, y: 2.0, text: `-${ev.dmg}`, color: '#ff9a9a' }
   }
+  if (ev.kind === 'player_heal') {
+    if (ev.targetId === selfId) {
+      return { x: selfPos.x, z: selfPos.z, y: 2.0, text: `+${ev.amount}`, color: '#7cff9a' }
+    }
+    const r = worldStore.getRemote(ev.targetId)
+    if (!r) return null
+    return { x: r.info.x, z: r.info.z, y: 2.0, text: `+${ev.amount}`, color: '#7cff9a' }
+  }
   if (ev.kind === 'level_up') {
     if (ev.playerId === selfId) {
       return { x: selfPos.x, z: selfPos.z, y: 2.4, text: 'LEVEL UP!', color: '#7cff7c', big: true }
@@ -71,7 +79,8 @@ export default function DamagePopups({ selfId, getSelfPos }) {
 
   useEffect(() => {
     return worldStore.subscribeCombat((ev) => {
-      const p = toPopup(ev, selfId, getSelfPos())
+      // 服务器事件中玩家 id 为 username, 以 store 的 selfId 为准
+      const p = toPopup(ev, worldStore.getSelfId() ?? selfId, getSelfPos())
       if (!p) return
       const key = nextKey++
       setPopups((list) => [...list.slice(-20), { key, ...p }]) // 上限防堆积

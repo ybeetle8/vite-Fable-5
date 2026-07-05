@@ -1,0 +1,144 @@
+{
+  "copper_sword": {
+    "id": "copper_sword",
+    "name": "铜之剑",
+    "icon": "🗡️",
+    "slot": "weapon",
+    "atk": 4,
+    "def": 0,
+    "classes": ["hero"],
+    "starter": ["hero"]
+  },
+  "steel_sword": {
+    "id": "steel_sword",
+    "name": "钢铁剑",
+    "icon": "⚔️",
+    "slot": "weapon",
+    "atk": 12,
+    "def": 0,
+    "classes": ["hero"],
+    "drop": { "monster": "skeleton", "chance": 0.08 }
+  },
+  "oak_staff": {
+    "id": "oak_staff",
+    "name": "橡木杖",
+    "icon": "🪄",
+    "slot": "weapon",
+    "atk": 5,
+    "def": 0,
+    "classes": ["mage"],
+    "starter": ["mage"]
+  },
+  "flame_staff": {
+    "id": "flame_staff",
+    "name": "烈焰法杖",
+    "icon": "🔥",
+    "slot": "weapon",
+    "atk": 14,
+    "def": 0,
+    "classes": ["mage"],
+    "drop": { "monster": "golem", "chance": 0.08 }
+  },
+  "wooden_mace": {
+    "id": "wooden_mace",
+    "name": "木质锤",
+    "icon": "🔨",
+    "slot": "weapon",
+    "atk": 4,
+    "def": 0,
+    "classes": ["priest"],
+    "starter": ["priest"]
+  },
+  "saint_mace": {
+    "id": "saint_mace",
+    "name": "圣者之锤",
+    "icon": "✨",
+    "slot": "weapon",
+    "atk": 12,
+    "def": 0,
+    "classes": ["priest"],
+    "drop": { "monster": "treant", "chance": 0.08 }
+  },
+  "cloth_armor": {
+    "id": "cloth_armor",
+    "name": "布衣",
+    "icon": "👕",
+    "slot": "armor",
+    "atk": 0,
+    "def": 2,
+    "classes": ["hero", "mage", "priest"],
+    "starter": ["mage", "priest"],
+    "drop": { "monster": "slime", "chance": 0.1 }
+  },
+  "leather_armor": {
+    "id": "leather_armor",
+    "name": "皮甲",
+    "icon": "🦺",
+    "slot": "armor",
+    "atk": 0,
+    "def": 4,
+    "classes": ["hero", "mage", "priest"],
+    "starter": ["hero"],
+    "drop": { "monster": "bigbeak", "chance": 0.08 }
+  },
+  "chain_mail": {
+    "id": "chain_mail",
+    "name": "锁子甲",
+    "icon": "⛓️",
+    "slot": "armor",
+    "atk": 0,
+    "def": 8,
+    "classes": ["hero", "mage", "priest"],
+    "drop": { "monster": "mothvenom", "chance": 0.06 }
+  },
+  "knight_plate": {
+    "id": "knight_plate",
+    "name": "骑士铠甲",
+    "icon": "🛡️",
+    "slot": "armor",
+    "atk": 0,
+    "def": 14,
+    "classes": ["hero", "priest"],
+    "drop": { "monster": "golem", "chance": 0.06 }
+  },
+  "wooden_shield": {
+    "id": "wooden_shield",
+    "name": "木盾",
+    "icon": "🪵",
+    "slot": "shield",
+    "atk": 0,
+    "def": 2,
+    "classes": ["hero", "mage", "priest"],
+    "starter": ["hero", "mage", "priest"]
+  },
+  "bronze_shield": {
+    "id": "bronze_shield",
+    "name": "青铜盾",
+    "icon": "🥉",
+    "slot": "shield",
+    "atk": 0,
+    "def": 5,
+    "classes": ["hero", "mage", "priest"],
+    "drop": { "monster": "bigbeak", "chance": 0.06 }
+  },
+  "spirit_orb": {
+    "id": "spirit_orb",
+    "name": "精灵法珠",
+    "icon": "🔮",
+    "slot": "shield",
+    "atk": 3,
+    "def": 6,
+    "classes": ["mage", "priest"],
+    "drop": { "monster": "skeleton", "chance": 0.05 }
+  },
+  "tower_shield": {
+    "id": "tower_shield",
+    "name": "巨人塔盾",
+    "icon": "🏰",
+    "slot": "shield",
+    "atk": 0,
+    "def": 10,
+    "classes": ["hero"],
+    "drop": { "monster": "demon", "chance": 0.1 }
+  }
+}

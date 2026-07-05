@@ -2,6 +2,7 @@
 import bcrypt from 'bcryptjs'
 import { loadJson, saveJson } from '../store/jsonStore.js'
 import { CLASSES, DEFAULT_MAP, MAPS, statsForLevel } from '../../shared/config.js'
+import { STARTER_GEAR } from '../systems/items.js'
 
 const FILE = 'accounts.json'
 
@@ -72,6 +73,8 @@ export function createCharacter(username, nickname, classId) {
     mp: stats.maxMp,
     map: DEFAULT_MAP,
     pos: { ...MAPS[DEFAULT_MAP].spawn },
+    equipment: { ...STARTER_GEAR[classId] }, // 初始装备直接穿上
+    inventory: [],
   }
   persist()
   console.log(`[auth] ${username} 创建角色: ${nickname}(${CLASSES[classId].name})`)

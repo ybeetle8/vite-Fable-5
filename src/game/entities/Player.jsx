@@ -1,4 +1,4 @@
-// 玩家角色: 本地预测移动 + 空格普攻 + E 键传送 + 攻击/死亡动画
+// 玩家角色: 本地预测移动 + 空格普攻 + 1/2/3 技能 + E 键传送 + 攻击/死亡动画
 import { useEffect, useMemo, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { useGLTF, useAnimations } from '@react-three/drei'
@@ -7,10 +7,12 @@ import { SkeletonUtils } from 'three-stdlib'
 import { CLASSES, MAPS, PORTAL_RANGE } from '../../../shared/config.js'
 import { stepPosition } from '../../../shared/movement.js'
 import { ATTACK_RANGE, ATTACK_COOLDOWN } from '../../../shared/combat.js'
+import { SKILLS_BY_CLASS } from '../gameData.js'
 import { useKeyboard } from '../input/useKeyboard.js'
-import { reportMove, sendAttack, requestChangeMap } from '../net/socket.js'
+import { reportMove, sendAttack, sendCastSkill, requestChangeMap } from '../net/socket.js'
 import { worldStore } from '../net/worldStore.js'
 import Nameplate from './Nameplate.jsx'
+import BuffRing from './BuffRing.jsx'
 
 const UP = new THREE.Vector3(0, 1, 0)
 const SNAP_DIST = 3
@@ -21,6 +23,19 @@ const ATTACK_ANIM = {
   hero: '1H_Melee_Attack_Slice_Diagonal',
   mage: 'Spellcast_Shoot',
   priest: '2H_Melee_Attack_Spin',
+}
+
+// 技能动画(缺失时回退职业普攻动画)
+const SKILL_ANIM = {
+  heavy_slash: '1H_Melee_Attack_Chop',
+  whirlwind: '2H_Melee_Attack_Spin',
+  taunt: 'Cheer',
+  fireball: 'Spellcast_Shoot',
+  lightning: 'Spellcast_Raise',
+  frost: 'Spellcast_Shoot',
+  heal: 'Spellcast_Raise',
+  mass_heal: 'Spellcast_Raise',
+  blessing: 'Spellcast_Long',
 }
 
 // mapId 变化时由 GameScreen 以 key={mapId} 强制重挂, state 随之重置
@@ -50,8 +65,54 @@ export default function Player({ character, mapId, startPos, posRef, onPortalNea
     nearPortal: false,
   })
 
-  // 空格普攻 + E 键传送
+  // 空格普攻 + 1/2/3 技能 + E 键传送
   useEffect(() => {
+    // 播放一次性动作动画并锁定 lockMs, 缺失时回退职业普攻动画
+    function playActionAnim(name, lockMs = 500) {
+      const s = state.current
+      const animName = actions[name] ? name : ATTACK_ANIM[character.classId]
+      if (!actions[animName]) return
+      const prev = actions[s.anim]
+      actions[animName].reset().setLoop(THREE.LoopOnce).fadeIn(0.05).play()
+      prev?.fadeOut(0.05)
+      s.anim = animName
+      s.attackAnimUntil = performance.now() + lockMs
+    }
+
+    function castSkill(slot) {
+      const s = state.current
+      if (s.dead) return
+      const skill = SKILLS_BY_CLASS[character.classId]?.[slot - 1]
+      if (!skill) return
+
+      // 本地预检: 冷却/MP 不足直接提示, 不发包
+      if (Date.now() < worldStore.skillReadyAt(skill.id)) {
+        worldStore.emitSkillHint(skill.id, '冷却中')
+        return
+      }
+      const stats = worldStore.getSelfStats()
+      if ((stats?.mp ?? 0) < skill.mp) {
+        worldStore.emitSkillHint(skill.id, 'MP 不足')
+        return
+      }
+
+      // 单体伤害技能需要目标
+      let targetId = null
+      if (skill.type === 'damage') {
+        const target = worldStore.nearestAliveMonster(s.pos, skill.range + 0.3)
+        if (!target) {
+          worldStore.emitSkillHint(skill.id, '没有目标')
+          return
+        }
+        targetId = target.id
+        s.facing = Math.atan2(target.x - s.pos.x, target.z - s.pos.z)
+      }
+
+      playActionAnim(SKILL_ANIM[skill.id], skill.castTime > 0 ? skill.castTime * 1000 + 300 : 600)
+      sendCastSkill(skill.id, targetId)
+      worldStore.markSkillUsed(skill.id, skill.cd) // 乐观进 CD, 服务器 fail 会回滚
+    }
+
     function onKey(e) {
       if (e.repeat) return
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return
@@ -59,6 +120,11 @@ export default function Player({ character, mapId, startPos, posRef, onPortalNea
 
       if (e.code === 'KeyE') {
         if (!s.dead && s.nearPortal) requestChangeMap()
+        return
+      }
+
+      if (e.code === 'Digit1' || e.code === 'Digit2' || e.code === 'Digit3') {
+        castSkill(Number(e.code.slice(-1)))
         return
       }
 
@@ -71,15 +137,7 @@ export default function Player({ character, mapId, startPos, posRef, onPortalNea
       s.attackCooldown = ATTACK_COOLDOWN
       // 面向目标
       s.facing = Math.atan2(target.x - s.pos.x, target.z - s.pos.z)
-      // 播攻击动画(锁 0.5s)
-      const animName = ATTACK_ANIM[character.classId]
-      if (actions[animName]) {
-        const prev = actions[s.anim]
-        actions[animName].reset().setLoop(THREE.LoopOnce).fadeIn(0.05).play()
-        prev?.fadeOut(0.05)
-        s.anim = animName
-        s.attackAnimUntil = performance.now() + 500
-      }
+      playActionAnim(ATTACK_ANIM[character.classId])
       sendAttack(target.id)
     }
     window.addEventListener('keydown', onKey)
@@ -247,6 +305,7 @@ export default function Player({ character, mapId, startPos, posRef, onPortalNea
   return (
     <group ref={group}>
       <primitive object={model} />
+      <BuffRing getBuffs={() => worldStore.getSelfStats()?.buffs?.map((b) => b.id)} />
       <Nameplate
         nickname={character.nickname}
         level={stats?.level ?? character.level}

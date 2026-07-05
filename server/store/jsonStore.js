@@ -23,5 +23,19 @@ export function saveJson(name, data) {
   const file = path.join(DATA_DIR, name)
   const tmp = file + '.tmp'
   fs.writeFileSync(tmp, JSON.stringify(data, null, 2))
-  fs.renameSync(tmp, file)
+  // Windows 下目标文件被杀毒/编辑器短暂占用时 rename 会抛 EPERM, 重试几次后降级为直接覆盖
+  for (let i = 0; i < 3; i++) {
+    try {
+      fs.renameSync(tmp, file)
+      return
+    } catch (err) {
+      if (err.code !== 'EPERM' && err.code !== 'EBUSY') throw err
+    }
+  }
+  try {
+    fs.copyFileSync(tmp, file)
+    fs.unlinkSync(tmp)
+  } catch (err) {
+    console.error(`[store] 写入 ${name} 失败(已保留 ${name}.tmp):`, err.message)
+  }
 }

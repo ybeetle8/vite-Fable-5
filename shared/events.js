@@ -3,6 +3,9 @@ export const EVT = {
   // C -> S
   MOVE: 'move',
   ATTACK: 'attack',
+  CAST_SKILL: 'cast_skill',         // { skillId, targetId? }
+  EQUIP_ITEM: 'equip_item',         // { itemId } 从背包穿上
+  UNEQUIP_ITEM: 'unequip_item',     // { slot } 卸下到背包
   CHAT: 'chat',
   CHANGE_MAP: 'change_map',
 
@@ -14,6 +17,8 @@ export const EVT = {
   COMBAT_RESULT: 'combat_result',
   CHAT_BROADCAST: 'chat_broadcast',
   PLAYER_UPDATE: 'player_update',
+  SKILL_RESULT: 'skill_result',         // 施法表现: { phase: 'cast'|'hit'|'fail', ... }
+  INVENTORY_UPDATE: 'inventory_update', // { equipment, inventory, gained?, gainedFrom?, full? }
   MAP_CHANGED: 'map_changed',       // 切图完成: 下发新图初始状态
   KICKED: 'kicked',                 // 顶号/被踢下线
 }

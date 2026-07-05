@@ -23,6 +23,8 @@ export function connectGame(token, handlers = {}) {
   socket.on(EVT.ENTITY_LEAVE, ({ id }) => worldStore.removeRemote(id))
   socket.on(EVT.COMBAT_RESULT, (ev) => worldStore.applyCombat(ev))
   socket.on(EVT.PLAYER_UPDATE, (stats) => worldStore.setSelfStats(stats))
+  socket.on(EVT.SKILL_RESULT, (ev) => worldStore.applySkill(ev))
+  socket.on(EVT.INVENTORY_UPDATE, (d) => worldStore.setInventory(d))
   socket.on(EVT.CHAT_BROADCAST, (msg) => handlers.onChat?.(msg))
   socket.on(EVT.MAP_CHANGED, (d) => {
     // 清空旧图实体, 装入新图初始状态
@@ -48,6 +50,21 @@ export function reportMove(dx, dz, facing) {
 // 请求攻击目标
 export function sendAttack(targetId) {
   socket?.emit(EVT.ATTACK, { targetId })
+}
+
+// 释放技能(targetId 仅单体伤害技能需要)
+export function sendCastSkill(skillId, targetId) {
+  socket?.emit(EVT.CAST_SKILL, { skillId, targetId })
+}
+
+// 穿戴背包中的装备
+export function sendEquip(itemId) {
+  socket?.emit(EVT.EQUIP_ITEM, { itemId })
+}
+
+// 卸下某槽位装备
+export function sendUnequip(slot) {
+  socket?.emit(EVT.UNEQUIP_ITEM, { slot })
 }
 
 // 发送聊天

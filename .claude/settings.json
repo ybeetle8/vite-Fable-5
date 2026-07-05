@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s http://localhost:62002/api/health)",
+      "Bash(node test-server/test-skills.js)",
+      "Bash(node server/index.js)",
+      "Bash(node test-server/test-combat.js)",
+      "Bash(node -e \"const a=require\\('./server/store/data/accounts.json'\\); for\\(const k of ['combat_test_a','combat_test_b']\\){const c=a[k]?.character; console.log\\(k, c? c.map+' '+JSON.stringify\\(c.pos\\)+' lv'+c.level : '不存在'\\)}\")",
+      "Bash(node -e ' *)",
+      "Bash(node test-server/test-sync.js)",
+      "Bash(node test-server/test-map.js)"
+    ]
+  }
+}

@@ -1,4 +1,5 @@
 // 世界管理(M5): 权威移动 + 怪物 AI + 战斗结算 + 经验升级 + 死亡复活
+// M8: 技能施放 + Buff + 装备与掉落
 import { EVT, TICK_RATE } from '../../shared/events.js'
 import {
   MAPS, CLASSES, statsForLevel, expToNext, RESPAWN_MAP, PORTAL_RANGE,
@@ -9,6 +10,10 @@ import { saveCharacter } from '../auth/accounts.js'
 import {
   getMonsters, findMonster, monsterPublicState, updateMonsters, damageMonster,
 } from '../systems/monsters.js'
+import {
+  ITEMS, EQUIP_SLOTS, INVENTORY_CAP, ensureEquipment, equipmentBonus, rollDrops,
+} from '../systems/items.js'
+import { SKILLS, handleCastSkill, cancelCast, tickCasting } from '../systems/skills.js'
 
 // username -> player 运行时实体
 const online = new Map()
@@ -16,8 +21,16 @@ let ioRef = null
 
 const RESPAWN_DELAY = 3 // 玩家死亡后复活秒数
 
+// 全局属性口径: 基础(等级) + 装备加成 + Buff 加成
 function playerStats(p) {
-  return statsForLevel(p.character.classId, p.character.level)
+  const s = { ...statsForLevel(p.character.classId, p.character.level) }
+  const bonus = equipmentBonus(p.character.equipment)
+  s.atk += bonus.atk
+  s.def += bonus.def
+  if (p.buffs?.blessing) {
+    s.atk = Math.floor(s.atk * SKILLS.blessing.buff.atkMul)
+  }
+  return s
 }
 
 function publicState(p) {
@@ -33,6 +46,7 @@ function publicState(p) {
     hp: p.character.hp,
     maxHp: playerStats(p).maxHp,
     dead: p.character.hp <= 0,
+    buffs: Object.keys(p.buffs ?? {}),
   }
 }
 
@@ -50,12 +64,15 @@ function pushSelfUpdate(p) {
     maxMp: stats.maxMp,
     atk: stats.atk,
     def: stats.def,
+    buffs: Object.entries(p.buffs ?? {}).map(([id, b]) => ({ id, remain: b.remain })),
+    equipment: p.character.equipment,
   })
 }
 
 // 把玩家移到指定地图指定位置: 换 Room + 双向 enter/leave + 下发新图状态
 function movePlayerToMap(p, mapId, x, z) {
   const oldMap = p.character.map
+  cancelCast(p)
   p.moving = false
   p.dir = { x: 0, z: 0 }
   p.character.map = mapId
@@ -84,6 +101,14 @@ function movePlayerToMap(p, mapId, x, z) {
 export function onPlayerConnect(io, socket, username, character) {
   ioRef = io
 
+  // 老角色兼容: 无装备字段则补发职业初始装备
+  if (ensureEquipment(character)) {
+    saveCharacter(username, {
+      equipment: character.equipment,
+      inventory: character.inventory,
+    })
+  }
+
   // 顶号: 同账号旧连接踢下线
   const prev = online.get(username)
   if (prev) {
@@ -101,6 +126,10 @@ export function onPlayerConnect(io, socket, username, character) {
     moving: false,
     attackTimer: 0,
     respawnTimer: 0,
+    buffs: {},           // { blessing: { remain } }
+    skillReadyAt: {},    // skillId -> 冷却结束时间戳(ms)
+    casting: null,       // { skillId, targetId, remain }
+    mpRegenAcc: 0,       // MP 自然回复累计器(秒)
   }
   online.set(username, player)
   socket.join(character.map)
@@ -115,6 +144,7 @@ export function onPlayerConnect(io, socket, username, character) {
     monsters: getMonsters(character.map).map(monsterPublicState),
   })
   pushSelfUpdate(player)
+  pushInventory(player)
   socket.to(character.map).emit(EVT.ENTITY_ENTER, publicState(player))
   console.log(`[world] ${character.nickname} 进入世界 (在线 ${online.size})`)
 
@@ -123,6 +153,7 @@ export function onPlayerConnect(io, socket, username, character) {
     if (player.character.hp <= 0) return // 死亡不能动
     player.dir = sanitizeDir(data?.dx, data?.dz)
     player.moving = player.dir.x !== 0 || player.dir.z !== 0
+    if (player.moving) cancelCast(player) // 移动打断吟唱
     if (Number.isFinite(data?.facing)) player.facing = data.facing
   })
 
@@ -151,6 +182,44 @@ export function onPlayerConnect(io, socket, username, character) {
     if (killed) {
       grantReward(player, m.cfg)
     }
+  })
+
+  // 技能施放(M8): 校验/吟唱/结算全在 systems/skills.js
+  socket.on(EVT.CAST_SKILL, (data) => {
+    handleCastSkill(skillCtx, player, data)
+  })
+
+  // 穿戴装备: 从背包穿上, 同槽旧件回背包
+  socket.on(EVT.EQUIP_ITEM, (data) => {
+    const item = ITEMS[data?.itemId]
+    const inv = player.character.inventory
+    const idx = inv.indexOf(data?.itemId)
+    if (!item || idx === -1) return
+    if (!item.classes.includes(player.character.classId)) return
+
+    inv.splice(idx, 1)
+    const old = player.character.equipment[item.slot]
+    if (old) inv.push(old)
+    player.character.equipment[item.slot] = item.id
+
+    pushSelfUpdate(player)
+    pushInventory(player)
+    saveCharacter(username, snapshotForSave(player))
+  })
+
+  // 卸下装备到背包
+  socket.on(EVT.UNEQUIP_ITEM, (data) => {
+    const slot = data?.slot
+    if (!EQUIP_SLOTS.includes(slot)) return
+    const itemId = player.character.equipment[slot]
+    if (!itemId || player.character.inventory.length >= INVENTORY_CAP) return
+
+    player.character.equipment[slot] = null
+    player.character.inventory.push(itemId)
+
+    pushSelfUpdate(player)
+    pushInventory(player)
+    saveCharacter(username, snapshotForSave(player))
   })
 
   // 传送切图: 校验玩家在传送点附近
@@ -203,13 +272,47 @@ function snapshotForSave(p) {
     gold: p.character.gold,
     hp: p.character.hp,
     mp: p.character.mp,
+    equipment: p.character.equipment,
+    inventory: p.character.inventory,
   }
 }
 
-// 击杀奖励: 经验 + 金币, 处理升级(可连升)
+// 推送装备与背包全量状态; gained 为本次新获得的装备(掉落提示)
+function pushInventory(p, extra = {}) {
+  p.socket.emit(EVT.INVENTORY_UPDATE, {
+    equipment: p.character.equipment,
+    inventory: p.character.inventory,
+    ...extra,
+  })
+}
+
+// 注入 systems/skills.js 的世界能力
+const skillCtx = {
+  get io() {
+    return ioRef
+  },
+  playersInMap,
+  playerStats,
+  grantReward,
+  pushSelfUpdate,
+}
+
+// 击杀奖励: 经验 + 金币 + 概率掉落装备, 处理升级(可连升)
 function grantReward(p, monsterCfg) {
   p.character.exp += monsterCfg.exp
   p.character.gold += monsterCfg.gold
+
+  // 装备掉落(M8): 直接进入装备列表, 背包满则仅提示
+  const itemId = rollDrops(monsterCfg.id, p.character.classId)
+  if (itemId) {
+    if (p.character.inventory.length >= INVENTORY_CAP) {
+      pushInventory(p, { full: true })
+    } else {
+      p.character.inventory.push(itemId)
+      pushInventory(p, { gained: itemId, gainedFrom: monsterCfg.name })
+      console.log(`[world] ${p.character.nickname} 获得掉落: ${ITEMS[itemId].name}`)
+    }
+  }
 
   let leveled = false
   while (p.character.exp >= expToNext(p.character.level)) {
@@ -253,6 +356,8 @@ function resolveMonsterAttack(m, target) {
     target.moving = false
     target.dir = { x: 0, z: 0 }
     target.respawnTimer = RESPAWN_DELAY
+    cancelCast(target)
+    target.buffs = {}
     console.log(`[world] ${target.character.nickname} 被 ${m.cfg.name} 击倒`)
   }
 }
@@ -294,11 +399,34 @@ setInterval(() => {
   for (const p of online.values()) {
     p.attackTimer = Math.max(0, p.attackTimer - delta)
 
+    // Buff 计时递减, 到期移除并同步属性
+    for (const id of Object.keys(p.buffs)) {
+      p.buffs[id].remain -= delta
+      if (p.buffs[id].remain <= 0) {
+        delete p.buffs[id]
+        pushSelfUpdate(p)
+      }
+    }
+
     // 死亡倒计时复活
     if (p.character.hp <= 0) {
       p.respawnTimer -= delta
       if (p.respawnTimer <= 0) respawnPlayer(p)
       continue
+    }
+
+    // 吟唱进度, 归零结算
+    tickCasting(skillCtx, p, delta)
+
+    // MP 自然回复: 每满 1 秒回 1 + 2% maxMp
+    const maxMp = playerStats(p).maxMp
+    if (p.character.mp < maxMp) {
+      p.mpRegenAcc += delta
+      if (p.mpRegenAcc >= 1) {
+        p.mpRegenAcc -= 1
+        p.character.mp = Math.min(maxMp, p.character.mp + 1 + Math.ceil(maxMp * 0.02))
+        pushSelfUpdate(p)
+      }
     }
 
     // 权威移动积分

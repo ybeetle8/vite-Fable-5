@@ -73,14 +73,27 @@ async function walkTo(c, tx, tz, timeoutMs = 20000) {
   return false
 }
 
+// M7 后出生在王城: 走北门传送到起始平原, 返回 map_changed 载荷
+async function goPlain(c) {
+  for (const [x, z] of [[5, 8], [5, 24], [0, 27.2]]) {
+    if (!(await walkTo(c, x, z))) return null
+  }
+  const arrived = new Promise((res) => c.socket.once('map_changed', (d) => res(d)))
+  c.socket.emit('change_map')
+  const d = await Promise.race([arrived, sleep(3000)])
+  return d?.map === 'novice_plain' ? d : null
+}
+
 console.log('== M5 战斗系统测试 ==')
 
 const A = await makeClient('combat_test_a', '战士甲', 'hero')
 await sleep(400)
 
-// 1. welcome 带怪物
-const monsters = A.welcome.monsters ?? []
-check('welcome 携带怪物列表(10 只)', monsters.length === 10, `实际 ${monsters.length}`)
+// 1. 传送到起始平原, 下发怪物列表(M7 后出生王城, welcome 无怪)
+const plain = await goPlain(A)
+await sleep(400)
+const monsters = plain?.monsters ?? []
+check('进入平原携带怪物列表(14 只)', monsters.length === 14, `实际 ${monsters.length}`)
 
 // 2. 超距攻击被拒绝(出生点离最近怪物 > 20 米)
 const target = monsters[0]
@@ -142,6 +155,8 @@ check('怪物 8 秒后重生满血', respawned && !respawned.dead && respawned.h
 //    改为用低级号乙站怪堆里, 两只怪同时打)
 console.log('-- 玩家死亡测试(约 60-90 秒, 站怪堆挨打) --')
 const B = await makeClient('combat_test_b', '法师乙', 'mage')
+await sleep(400)
+await goPlain(B)
 await sleep(400)
 // 走到两只怪中间聚仇恨
 await walkTo(B, 16.5, 13.5)
