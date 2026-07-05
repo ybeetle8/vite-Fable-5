@@ -1,0 +1,245 @@
+{
+  "q1_slime": {
+    "id": "q1_slime",
+    "chain": 1,
+    "npc": "king",
+    "name": "史莱姆讨伐",
+    "type": "kill",
+    "target": "slime",
+    "goal": 6,
+    "prereq": null,
+    "recommendLevel": 1,
+    "dialog": {
+      "offer": [
+        "城外平原的史莱姆愈发猖獗，连商队都不敢出门了。",
+        "勇者啊，替我讨伐 6 只史莱姆吧！"
+      ],
+      "progress": ["史莱姆就在北边平原，穿过传送门便是。"],
+      "complete": [
+        "干得漂亮！这是给你的谢礼。",
+        "看来你确实有勇者的资质……"
+      ]
+    },
+    "reward": { "exp": 40, "gold": 60 }
+  },
+  "q2_gel": {
+    "id": "q2_gel",
+    "chain": 2,
+    "npc": "king",
+    "name": "凝胶采集",
+    "type": "collect",
+    "target": "slime",
+    "material": "史莱姆凝胶",
+    "materialIcon": "🫧",
+    "goal": 6,
+    "chance": 0.7,
+    "prereq": "q1_slime",
+    "recommendLevel": 3,
+    "dialog": {
+      "offer": [
+        "宫廷药师需要史莱姆凝胶来调制伤药。",
+        "击倒史莱姆便有机会取得，收集 6 份回来吧。"
+      ],
+      "progress": ["凝胶要新鲜的才行，拜托了。"],
+      "complete": [
+        "很好，药师一定会很高兴的。",
+        "这件皮甲送给你，前路会越来越凶险。"
+      ]
+    },
+    "reward": { "exp": 60, "gold": 80, "items": ["leather_armor"] }
+  },
+  "q3_bigbeak": {
+    "id": "q3_bigbeak",
+    "chain": 3,
+    "npc": "king",
+    "name": "大嘴鸟的骚扰",
+    "type": "kill",
+    "target": "bigbeak",
+    "goal": 8,
+    "prereq": "q2_gel",
+    "recommendLevel": 4,
+    "dialog": {
+      "offer": [
+        "农夫们抱怨平原东西两侧的大嘴鸟糟蹋庄稼。",
+        "去驱逐它们吧，讨伐 8 只大嘴鸟！"
+      ],
+      "progress": ["大嘴鸟栖息在平原的东西两角。"],
+      "complete": [
+        "庄稼保住了，农夫们感激不尽！",
+        "拿上这面盾，它能替你挡下不少伤害。"
+      ]
+    },
+    "reward": { "exp": 100, "gold": 120, "items": ["bronze_shield"] }
+  },
+  "q4_mothdust": {
+    "id": "q4_mothdust",
+    "chain": 4,
+    "npc": "king",
+    "name": "迷雾中的毒粉",
+    "type": "collect",
+    "target": "mothvenom",
+    "material": "毒蛾鳞粉",
+    "materialIcon": "🦋",
+    "goal": 6,
+    "chance": 0.6,
+    "prereq": "q3_bigbeak",
+    "recommendLevel": 5,
+    "dialog": {
+      "offer": [
+        "解毒剂的原料需要毒蛾的鳞粉。",
+        "穿过平原前往迷雾森林，从毒蛾身上收集 6 份鳞粉。"
+      ],
+      "progress": ["迷雾森林在平原北面，小心毒蛾的攻击。"],
+      "complete": [
+        "有了这些，解毒剂就能配成了。",
+        "这件锁子甲是王家武库的存货，穿上它吧。"
+      ]
+    },
+    "reward": { "exp": 150, "gold": 150, "items": ["chain_mail"] }
+  },
+  "q5_treant": {
+    "id": "q5_treant",
+    "chain": 5,
+    "npc": "king",
+    "name": "暴走的树精",
+    "type": "kill",
+    "target": "treant",
+    "goal": 5,
+    "prereq": "q4_mothdust",
+    "recommendLevel": 7,
+    "dialog": {
+      "offer": [
+        "森林深处的树精受魔气侵蚀而暴走，袭击了樵夫。",
+        "讨伐 5 只树精，还森林安宁！"
+      ],
+      "progress": ["树精行动迟缓但力大无穷，别被围住。"],
+      "complete": [
+        "森林恢复了平静，樵夫们能安心干活了。",
+        "你的实力已经今非昔比了啊。"
+      ]
+    },
+    "reward": { "exp": 200, "gold": 200 }
+  },
+  "q6_skeleton": {
+    "id": "q6_skeleton",
+    "chain": 6,
+    "npc": "king",
+    "name": "洞窟的亡灵",
+    "type": "kill",
+    "target": "skeleton",
+    "goal": 8,
+    "prereq": "q5_treant",
+    "recommendLevel": 8,
+    "dialog": {
+      "offer": [
+        "森林尽头的岩石洞窟里，亡灵在魔王的召唤下苏醒。",
+        "讨伐 8 只骷髅兵，斩断魔王伸向王国的爪牙！"
+      ],
+      "progress": ["洞窟在迷雾森林的北面深处。"],
+      "complete": [
+        "亡灵的骚动平息了……但这只是开始。",
+        "这件武器是王国工匠的杰作，愿它伴你走得更远。"
+      ]
+    },
+    "reward": {
+      "exp": 280,
+      "gold": 250,
+      "itemsByClass": {
+        "hero": "steel_sword",
+        "mage": "flame_staff",
+        "priest": "saint_mace"
+      }
+    }
+  },
+  "q7_core": {
+    "id": "q7_core",
+    "chain": 7,
+    "npc": "king",
+    "name": "魔像核心",
+    "type": "collect",
+    "target": "golem",
+    "material": "魔像核心",
+    "materialIcon": "💎",
+    "goal": 4,
+    "chance": 0.5,
+    "prereq": "q6_skeleton",
+    "recommendLevel": 10,
+    "dialog": {
+      "offer": [
+        "贤者说，石魔像体内的核心蕴含着魔王的力量线索。",
+        "深入洞窟，从石魔像身上取回 4 枚核心。"
+      ],
+      "progress": ["石魔像在洞窟最深处，皮糙肉厚，做好准备。"],
+      "complete": [
+        "贤者正在分析这些核心……魔王城的结界已经松动了。",
+        "收下这件防具，决战就在眼前。"
+      ]
+    },
+    "reward": {
+      "exp": 400,
+      "gold": 350,
+      "itemsByClass": {
+        "hero": "tower_shield",
+        "mage": "spirit_orb",
+        "priest": "spirit_orb"
+      }
+    }
+  },
+  "q8_demon": {
+    "id": "q8_demon",
+    "chain": 8,
+    "npc": "king",
+    "name": "城门死斗",
+    "type": "kill",
+    "target": "demon",
+    "goal": 3,
+    "prereq": "q7_core",
+    "recommendLevel": 11,
+    "dialog": {
+      "offer": [
+        "时机已到！穿过洞窟就是魔王城。",
+        "城门由恶魔卫兵把守——讨伐 3 只恶魔卫兵，打开通路！"
+      ],
+      "progress": ["恶魔卫兵实力强横，务必带足补给。"],
+      "complete": [
+        "你竟然真的击破了城门守卫……勇者，王国的希望就在你身上！"
+      ]
+    },
+    "reward": {
+      "exp": 550,
+      "gold": 500,
+      "itemsByClass": {
+        "hero": "knight_plate",
+        "mage": null,
+        "priest": "knight_plate"
+      },
+      "goldByClass": { "mage": 200 }
+    }
+  },
+  "q9_sigil": {
+    "id": "q9_sigil",
+    "chain": 9,
+    "npc": "king",
+    "name": "恶魔的徽记",
+    "type": "collect",
+    "target": "demon",
+    "material": "恶魔徽记",
+    "materialIcon": "🔱",
+    "goal": 2,
+    "chance": 0.6,
+    "prereq": "q8_demon",
+    "recommendLevel": 12,
+    "dialog": {
+      "offer": [
+        "贤者需要恶魔徽记来定位魔王王座的结界之门。",
+        "从恶魔卫兵身上取回 2 枚徽记，这是决战前最后的准备！"
+      ],
+      "progress": ["徽记佩戴在恶魔卫兵的胸口。"],
+      "complete": [
+        "结界之门的位置确定了……通往魔王王座的路已经打开。",
+        "休整吧，勇者。与魔王的决战，即将到来。（后续冒险敬请期待）"
+      ]
+    },
+    "reward": { "exp": 800, "gold": 800 }
+  }
+}

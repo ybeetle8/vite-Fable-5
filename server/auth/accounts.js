@@ -75,6 +75,7 @@ export function createCharacter(username, nickname, classId) {
     pos: { ...MAPS[DEFAULT_MAP].spawn },
     equipment: { ...STARTER_GEAR[classId] }, // 初始装备直接穿上
     inventory: [],
+    quests: { active: {}, completed: [] },
   }
   persist()
   console.log(`[auth] ${username} 创建角色: ${nickname}(${CLASSES[classId].name})`)

@@ -16,6 +16,16 @@ export function connectGame(token, handlers = {}) {
     worldStore.setSelfId(d.selfId)
     for (const p of d.players ?? []) worldStore.addRemote(p)
     worldStore.setInitialMonsters(d.monsters ?? [])
+    // 任务初始状态直接取自角色档案(quest_update 随后覆盖)
+    if (d.character?.quests) {
+      worldStore.setQuests({
+        active: Object.entries(d.character.quests.active).map(([id, q]) => ({
+          id,
+          progress: q.progress,
+        })),
+        completed: d.character.quests.completed,
+      })
+    }
     handlers.onWelcome?.(d)
   })
   socket.on(EVT.WORLD_SNAPSHOT, (snap) => worldStore.applySnapshot(snap))
@@ -25,6 +35,8 @@ export function connectGame(token, handlers = {}) {
   socket.on(EVT.PLAYER_UPDATE, (stats) => worldStore.setSelfStats(stats))
   socket.on(EVT.SKILL_RESULT, (ev) => worldStore.applySkill(ev))
   socket.on(EVT.INVENTORY_UPDATE, (d) => worldStore.setInventory(d))
+  socket.on(EVT.QUEST_UPDATE, (d) => worldStore.setQuests(d))
+  socket.on(EVT.NPC_RESULT, (d) => handlers.onNpcResult?.(d))
   socket.on(EVT.CHAT_BROADCAST, (msg) => handlers.onChat?.(msg))
   socket.on(EVT.MAP_CHANGED, (d) => {
     // 清空旧图实体, 装入新图初始状态
@@ -65,6 +77,27 @@ export function sendEquip(itemId) {
 // 卸下某槽位装备
 export function sendUnequip(slot) {
   socket?.emit(EVT.UNEQUIP_ITEM, { slot })
+}
+
+// 任务接取/交付
+export function sendQuestAccept(questId) {
+  socket?.emit(EVT.QUEST_ACCEPT, { questId })
+}
+export function sendQuestComplete(questId) {
+  socket?.emit(EVT.QUEST_COMPLETE, { questId })
+}
+
+// 商店买卖(出售按背包下标)
+export function sendShopBuy(npcId, itemId) {
+  socket?.emit(EVT.SHOP_BUY, { npcId, itemId })
+}
+export function sendShopSell(npcId, index) {
+  socket?.emit(EVT.SHOP_SELL, { npcId, index })
+}
+
+// 旅馆休息
+export function sendInnRest(npcId) {
+  socket?.emit(EVT.INN_REST, { npcId })
 }
 
 // 发送聊天

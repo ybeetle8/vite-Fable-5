@@ -4,7 +4,7 @@ import { Canvas } from '@react-three/fiber'
 import { CLASSES, MAPS } from '../../shared/config.js'
 import { connectGame, disconnectGame } from '../game/net/socket.js'
 import { worldStore } from '../game/net/worldStore.js'
-import { SKILLS, ITEMS } from '../game/gameData.js'
+import { SKILLS, ITEMS, NPCS, QUESTS } from '../game/gameData.js'
 import GameMap from '../game/scenes/GameMap.jsx'
 import Player from '../game/entities/Player.jsx'
 import RemotePlayer from '../game/entities/RemotePlayer.jsx'
@@ -14,6 +14,34 @@ import SkillEffects from '../game/entities/SkillEffects.jsx'
 import ChatPanel from './ChatPanel.jsx'
 import SkillBar from './SkillBar.jsx'
 import CharacterPanel from './CharacterPanel.jsx'
+import NpcDialog from './NpcDialog.jsx'
+import QuestPanel from './QuestPanel.jsx'
+
+// NPC 交互结果 -> 系统消息文案
+function npcResultText(r) {
+  const item = ITEMS[r.itemId]
+  if (r.action === 'buy') {
+    if (r.ok) return `购买了【${item?.name ?? r.itemId}】 -${r.cost}G`
+    if (r.reason === 'gold') return '金币不足, 买不起…'
+    if (r.reason === 'bag_full') return '背包已满, 无法购买'
+  }
+  if (r.action === 'sell' && r.ok) return `出售了【${item?.name ?? r.itemId}】 +${r.gold}G`
+  if (r.action === 'inn') {
+    if (r.ok) return `在旅馆好好休息了一晚 -${r.cost}G, HP/MP 全满!`
+    if (r.reason === 'gold') return `金币不足, 住不起旅馆(需 ${r.cost}G)`
+  }
+  if (r.action === 'accept' && r.ok) {
+    return `【任务】接受了「${QUESTS[r.questId]?.name ?? r.questId}」`
+  }
+  if (r.action === 'complete') {
+    if (r.ok) {
+      const items = (r.items ?? []).map((id) => `【${ITEMS[id]?.name ?? id}】`).join('')
+      return `【任务】完成「${QUESTS[r.questId]?.name ?? r.questId}」 +${r.exp}经验 +${r.gold}G ${items}`
+    }
+    if (r.reason === 'bag_full') return '背包已满, 无法领取任务奖励'
+  }
+  return null
+}
 
 // 订阅实体 id 列表(增删时才重渲染)
 function useEntityIds() {
@@ -55,7 +83,10 @@ export default function GameScreen({ token, character, onLogout }) {
   })
   const [loading, setLoading] = useState(false)
   const [nearPortal, setNearPortal] = useState(false)
+  const [nearNpc, setNearNpc] = useState(null)      // 附近 NPC id
+  const [activeNpc, setActiveNpc] = useState(null)  // 正在对话的 NPC id
   const [showCharPanel, setShowCharPanel] = useState(false)
+  const [showQuestPanel, setShowQuestPanel] = useState(false)
   const [, buffTick] = useState(0) // 驱动 buff 剩余秒数刷新
   const { remotes, monsters } = useEntityIds()
   const stats = useSelfStats()
@@ -78,6 +109,8 @@ export default function GameScreen({ token, character, onLogout }) {
         // 短暂 Loading 遮罩过渡, 掩盖场景重建
         setLoading(true)
         setNearPortal(false)
+        setNearNpc(null)
+        setActiveNpc(null)
         setMapState((prev) => ({ mapId: d.map, pos: { x: d.x, z: d.z }, seq: prev.seq + 1 }))
         setTimeout(() => setLoading(false), 500)
       },
@@ -85,19 +118,51 @@ export default function GameScreen({ token, character, onLogout }) {
       onDisconnect: () => setStatus((s) => (s === 'kicked' ? s : 'offline')),
       onError: () => setStatus('offline'),
       onChat: (msg) => chatSinkRef.current?.(msg),
+      onNpcResult: (r) => {
+        // NPC 交互结果 -> 系统消息
+        const text = npcResultText(r)
+        if (text) {
+          chatSinkRef.current?.({ from: '系统', level: 0, text, t: Date.now() })
+        }
+      },
     })
     return () => disconnectGame()
   }, [token])
 
-  // C 键开关角色面板
+  // C 键角色面板 / Q 键任务面板
   useEffect(() => {
     function onKey(e) {
       if (e.repeat) return
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return
       if (e.code === 'KeyC') setShowCharPanel((v) => !v)
+      if (e.code === 'KeyQ') setShowQuestPanel((v) => !v)
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
+  // 对话中走出交互范围自动关闭
+  useEffect(() => {
+    if (!activeNpc) return
+    const npc = NPCS[activeNpc]
+    const iv = setInterval(() => {
+      const pos = selfPosRef.current
+      if (Math.hypot(npc.x - pos.x, npc.z - pos.z) > 3.2) setActiveNpc(null)
+    }, 300)
+    return () => clearInterval(iv)
+  }, [activeNpc])
+
+  // 任务进度 toast -> 系统消息
+  useEffect(() => {
+    return worldStore.subscribeQuests((d) => {
+      if (!d.toast) return
+      const q = QUESTS[d.toast.questId]
+      if (!q) return
+      const text = d.toast.done
+        ? `【任务】${q.name} 已完成! 回去找${NPCS[q.npc]?.name ?? 'NPC'}交付吧`
+        : `【任务】${q.name} ${d.toast.progress}/${d.toast.goal}`
+      chatSinkRef.current?.({ from: '系统', level: 0, text, t: Date.now() })
+    })
   }, [])
 
   // 掉落获得提示 -> 聊天面板系统消息
@@ -165,6 +230,8 @@ export default function GameScreen({ token, character, onLogout }) {
             startPos={mapState.pos}
             posRef={selfPosRef}
             onPortalNearby={setNearPortal}
+            onNpcNearby={setNearNpc}
+            onInteractNpc={setActiveNpc}
           />
           {remotes.map((id) => (
             <RemotePlayer key={id} id={id} />
@@ -217,8 +284,11 @@ export default function GameScreen({ token, character, onLogout }) {
         </div>
       </div>
 
-      {/* 传送提示 */}
-      {nearPortal && !isDead && (
+      {/* 传送/NPC 交互提示 */}
+      {nearNpc && !activeNpc && !isDead && (
+        <div className="portal-hint">按 E 与 {NPCS[nearNpc]?.name} 对话</div>
+      )}
+      {nearPortal && !nearNpc && !isDead && (
         <div className="portal-hint">按 E 传送</div>
       )}
 
@@ -245,8 +315,14 @@ export default function GameScreen({ token, character, onLogout }) {
         <CharacterPanel character={character} onClose={() => setShowCharPanel(false)} />
       )}
 
+      {showQuestPanel && <QuestPanel onClose={() => setShowQuestPanel(false)} />}
+
+      {activeNpc && !isDead && (
+        <NpcDialog npcId={activeNpc} character={character} onClose={() => setActiveNpc(null)} />
+      )}
+
       <div className="hud-bottom">
-        WASD 移动 · 空格 攻击 · 1/2/3 技能 · C 角色 · E 传送 · Enter 聊天 · 右键旋转镜头
+        WASD 移动 · 空格 攻击 · 1/2/3 技能 · E 交互 · C 角色 · Q 任务 · Enter 聊天
       </div>
     </div>
   )

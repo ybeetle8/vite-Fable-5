@@ -744,3 +744,322 @@ body,
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* ---------- M9: NPC 对话框 ---------- */
+
+.npc-dialog {
+  position: absolute;
+  bottom: 130px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 620px;
+  max-height: 60vh;
+  overflow-y: auto;
+  z-index: 22;
+  gap: 10px;
+  padding: 18px 24px;
+}
+
+.npc-dialog-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.npc-dialog-name {
+  color: #ffd75e;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.npc-dialog-text {
+  white-space: pre-line;
+  color: #fff;
+  font-size: 14px;
+  line-height: 1.7;
+  min-height: 44px;
+  text-shadow: 1px 1px 0 #000;
+}
+
+/* 任务列表 */
+.npc-quest-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.npc-quest-item {
+  background: rgba(6, 10, 32, 0.7);
+  border: 2px solid #4a5490;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.npc-quest-item.ready {
+  border-color: #ffd75e;
+}
+
+.npc-quest-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #fff;
+  font-size: 14px;
+}
+
+.npc-quest-lv {
+  font-size: 11px;
+  color: #8fa1ff;
+}
+
+.npc-quest-goal {
+  color: #cdd3ff;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.npc-quest-reward {
+  color: #7cff9a;
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.npc-quest-btns {
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+}
+
+.npc-quest-btns button {
+  background: #ffd75e;
+  color: #1a1a2e;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: bold;
+  padding: 6px 16px;
+  cursor: pointer;
+}
+
+.npc-quest-btns button:hover {
+  background: #ffe58a;
+}
+
+.npc-quest-btns button.ready {
+  background: #7cff9a;
+}
+
+.npc-quest-doing {
+  color: #9a9aa8;
+  font-size: 12px;
+}
+
+.npc-quest-empty {
+  color: rgba(205, 211, 255, 0.6);
+  font-size: 13px;
+  text-align: center;
+  padding: 10px 0;
+}
+
+/* 商店 */
+.shop-tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.shop-tabs button {
+  background: rgba(6, 10, 32, 0.7);
+  border: 2px solid #4a5490;
+  border-radius: 6px;
+  color: #cdd3ff;
+  font-size: 13px;
+  padding: 5px 18px;
+  cursor: pointer;
+}
+
+.shop-tabs button.on {
+  border-color: #ffd75e;
+  color: #ffd75e;
+}
+
+.shop-gold {
+  margin-left: auto;
+  color: #ffd75e;
+  font-size: 13px;
+}
+
+.shop-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.shop-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(6, 10, 32, 0.7);
+  border: 2px solid #4a5490;
+  border-radius: 8px;
+  padding: 7px 10px;
+}
+
+.shop-item.unusable .shop-name {
+  color: #9a9aa8;
+}
+
+.shop-icon {
+  font-size: 20px;
+  width: 28px;
+  text-align: center;
+}
+
+.shop-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.shop-name {
+  color: #fff;
+  font-size: 14px;
+}
+
+.shop-stat {
+  color: #7cff9a;
+  font-size: 12px;
+}
+
+.shop-item button {
+  background: #ffd75e;
+  color: #1a1a2e;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: bold;
+  padding: 6px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.shop-item button:hover:not(:disabled) {
+  background: #ffe58a;
+}
+
+.shop-item button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* 旅馆 */
+.npc-inn button {
+  width: 100%;
+  background: #ffd75e;
+  color: #1a1a2e;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: bold;
+  padding: 12px;
+  cursor: pointer;
+}
+
+.npc-inn button:hover:not(:disabled) {
+  background: #ffe58a;
+}
+
+.npc-inn button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ---------- M9: 任务面板 ---------- */
+
+.quest-panel {
+  position: absolute;
+  top: 60px;
+  right: 16px;
+  width: 340px;
+  max-height: 70vh;
+  overflow-y: auto;
+  z-index: 20;
+  gap: 10px;
+  padding: 18px 22px;
+}
+
+.quest-progress-line {
+  color: #ffd75e;
+  font-size: 13px;
+}
+
+.quest-section {
+  color: #8fa1ff;
+  font-size: 12px;
+  border-top: 1px solid rgba(74, 84, 144, 0.5);
+  padding-top: 8px;
+}
+
+.quest-empty {
+  color: rgba(205, 211, 255, 0.6);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.quest-item {
+  background: rgba(6, 10, 32, 0.7);
+  border: 2px solid #4a5490;
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.quest-item.done {
+  border-color: #ffd75e;
+}
+
+.quest-item-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #fff;
+  font-size: 13px;
+}
+
+.quest-ready-badge {
+  color: #ffd75e;
+  font-size: 11px;
+}
+
+.quest-item-goal {
+  color: #cdd3ff;
+  font-size: 12px;
+  margin-top: 3px;
+}
+
+.quest-bar {
+  margin-top: 6px;
+  height: 6px;
+  background: #060a20;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.quest-bar > div {
+  height: 100%;
+  background: linear-gradient(90deg, #ffd75e, #ffb63e);
+  transition: width 0.3s;
+}
+
+.quest-completed-list {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.quest-completed-item {
+  color: rgba(124, 255, 154, 0.75);
+  font-size: 12px;
+}

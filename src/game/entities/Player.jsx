@@ -4,10 +4,10 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { useGLTF, useAnimations } from '@react-three/drei'
 import * as THREE from 'three'
 import { SkeletonUtils } from 'three-stdlib'
-import { CLASSES, MAPS, PORTAL_RANGE } from '../../../shared/config.js'
+import { CLASSES, MAPS, PORTAL_RANGE, NPC_RANGE } from '../../../shared/config.js'
 import { stepPosition } from '../../../shared/movement.js'
 import { ATTACK_RANGE, ATTACK_COOLDOWN } from '../../../shared/combat.js'
-import { SKILLS_BY_CLASS } from '../gameData.js'
+import { SKILLS_BY_CLASS, NPCS } from '../gameData.js'
 import { useKeyboard } from '../input/useKeyboard.js'
 import { reportMove, sendAttack, sendCastSkill, requestChangeMap } from '../net/socket.js'
 import { worldStore } from '../net/worldStore.js'
@@ -39,7 +39,9 @@ const SKILL_ANIM = {
 }
 
 // mapId 变化时由 GameScreen 以 key={mapId} 强制重挂, state 随之重置
-export default function Player({ character, mapId, startPos, posRef, onPortalNearby }) {
+export default function Player({
+  character, mapId, startPos, posRef, onPortalNearby, onNpcNearby, onInteractNpc,
+}) {
   const cls = CLASSES[character.classId]
   const map = MAPS[mapId]
   const group = useRef()
@@ -63,6 +65,7 @@ export default function Player({ character, mapId, startPos, posRef, onPortalNea
     attackAnimUntil: 0, // 攻击动画播放期间锁定动画切换
     dead: false,
     nearPortal: false,
+    nearNpc: null, // 附近可交互 NPC id
   })
 
   // 空格普攻 + 1/2/3 技能 + E 键传送
@@ -119,7 +122,12 @@ export default function Player({ character, mapId, startPos, posRef, onPortalNea
       const s = state.current
 
       if (e.code === 'KeyE') {
-        if (!s.dead && s.nearPortal) requestChangeMap()
+        if (s.dead) return
+        if (s.nearNpc) {
+          onInteractNpc?.(s.nearNpc) // NPC 优先于传送门
+          return
+        }
+        if (s.nearPortal) requestChangeMap()
         return
       }
 
@@ -142,7 +150,7 @@ export default function Player({ character, mapId, startPos, posRef, onPortalNea
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [actions, character.classId])
+  }, [actions, character.classId, onInteractNpc])
 
   // 鼠标右键旋转镜头 + 滚轮缩放
   useEffect(() => {
@@ -288,6 +296,22 @@ export default function Player({ character, mapId, startPos, posRef, onPortalNea
     if (near !== s.nearPortal) {
       s.nearPortal = near
       onPortalNearby?.(near)
+    }
+
+    // NPC 靠近检测(M9): 本图最近的可交互 NPC
+    let nearestNpc = null
+    let nearestNpcD = NPC_RANGE
+    for (const npc of Object.values(NPCS)) {
+      if (npc.map !== mapId) continue
+      const d = Math.hypot(npc.x - s.pos.x, npc.z - s.pos.z)
+      if (d < nearestNpcD) {
+        nearestNpc = npc.id
+        nearestNpcD = d
+      }
+    }
+    if (nearestNpc !== s.nearNpc) {
+      s.nearNpc = nearestNpc
+      onNpcNearby?.(nearestNpc)
     }
 
     // 第三人称跟随镜头

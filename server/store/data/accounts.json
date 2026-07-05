@@ -163,8 +163,8 @@
       "mp": 34,
       "map": "novice_plain",
       "pos": {
-        "x": 20.54854525072734,
-        "z": -23.042937072054112
+        "x": 12.786608721857323,
+        "z": -17.10601593663798
       },
       "equipment": {
         "weapon": "copper_sword",
@@ -225,6 +225,39 @@
         "shield": "wooden_shield"
       },
       "inventory": []
+    }
+  },
+  "xx": {
+    "username": "xx",
+    "passwordHash": "$2b$10$5944C3/a1ZGpE9Uo5iBMze1FzRv9a0ZoyHrWgGrKTBI8yy.uWE/V2",
+    "createdAt": "2026-07-05T02:45:28.328Z",
+    "character": {
+      "nickname": "xx",
+      "classId": "mage",
+      "level": 1,
+      "exp": 0,
+      "gold": 0,
+      "hp": 80,
+      "mp": 60,
+      "map": "novice_plain",
+      "pos": {
+        "x": 0,
+        "z": -44
+      },
+      "equipment": {
+        "weapon": "oak_staff",
+        "armor": "cloth_armor",
+        "shield": "wooden_shield"
+      },
+      "inventory": [],
+      "quests": {
+        "active": {
+          "q1_slime": {
+            "progress": 0
+          }
+        },
+        "completed": []
+      }
     }
   }
 }

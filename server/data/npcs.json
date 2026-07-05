@@ -1,0 +1,80 @@
+{
+  "king": {
+    "id": "king",
+    "name": "阿雷夫国王",
+    "map": "castle_town",
+    "x": 0,
+    "z": -12.5,
+    "facing": 0,
+    "type": "quest_giver",
+    "color": "#e8c14a",
+    "shape": "king",
+    "dialog": [
+      "勇者啊，欢迎来到阿雷夫王国。",
+      "自魔王苏醒以来，王国的土地日渐荒芜……",
+      "能拯救这片大陆的，唯有被命运选中的旅人。"
+    ]
+  },
+  "weapon_shop": {
+    "id": "weapon_shop",
+    "name": "武器店老板 巴克",
+    "map": "castle_town",
+    "x": -15,
+    "z": -4,
+    "facing": 1.2,
+    "type": "shop",
+    "sells": ["weapon", "shield"],
+    "color": "#c0653a",
+    "shape": "burly",
+    "dialog": [
+      "哟，是新来的冒险者吧！",
+      "刀剑锤杖盾，应有尽有。要看看货吗？"
+    ]
+  },
+  "armor_shop": {
+    "id": "armor_shop",
+    "name": "防具店老板娘 莉娜",
+    "map": "castle_town",
+    "x": 15,
+    "z": -4,
+    "facing": -1.2,
+    "type": "shop",
+    "sells": ["armor"],
+    "color": "#7a9e5f",
+    "shape": "lady",
+    "dialog": [
+      "欢迎光临～好的盔甲能在关键时刻救你一命哦。"
+    ]
+  },
+  "inn_keeper": {
+    "id": "inn_keeper",
+    "name": "旅馆老板 汤姆",
+    "map": "castle_town",
+    "x": -18,
+    "z": 10.5,
+    "facing": 1.6,
+    "type": "inn",
+    "color": "#8a6db1",
+    "shape": "round",
+    "dialog": [
+      "欢迎来到晨星旅馆！",
+      "睡上一觉，明天又是精神饱满的一天。"
+    ]
+  },
+  "sister": {
+    "id": "sister",
+    "name": "修女 艾玛",
+    "map": "castle_town",
+    "x": 18,
+    "z": 10.5,
+    "facing": -1.6,
+    "type": "church",
+    "color": "#e8e8f0",
+    "shape": "sister",
+    "dialog": [
+      "愿光明守护你，迷途的羔羊。",
+      "倘若你不幸倒下，女神会指引你回到这座王城。",
+      "死亡后将在王城复活，不必畏惧前路。"
+    ]
+  }
+}

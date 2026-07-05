@@ -109,3 +109,5 @@ export const DEFAULT_MAP = 'castle_town'
 export const RESPAWN_MAP = 'castle_town'
 // 传送门交互距离
 export const PORTAL_RANGE = 2.5
+// NPC 交互距离
+export const NPC_RANGE = 2.5

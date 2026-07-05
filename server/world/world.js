@@ -14,6 +14,10 @@ import {
   ITEMS, EQUIP_SLOTS, INVENTORY_CAP, ensureEquipment, equipmentBonus, rollDrops,
 } from '../systems/items.js'
 import { SKILLS, handleCastSkill, cancelCast, tickCasting } from '../systems/skills.js'
+import { handleShopBuy, handleShopSell, handleInnRest } from '../systems/npcs.js'
+import {
+  ensureQuests, pushQuests, handleQuestAccept, handleQuestComplete, onMonsterKilled,
+} from '../systems/quests.js'
 
 // username -> player 运行时实体
 const online = new Map()
@@ -101,11 +105,14 @@ function movePlayerToMap(p, mapId, x, z) {
 export function onPlayerConnect(io, socket, username, character) {
   ioRef = io
 
-  // 老角色兼容: 无装备字段则补发职业初始装备
-  if (ensureEquipment(character)) {
+  // 老角色兼容: 无装备字段则补发职业初始装备; 无任务字段则补空结构
+  const needSaveEquip = ensureEquipment(character)
+  const needSaveQuests = ensureQuests(character)
+  if (needSaveEquip || needSaveQuests) {
     saveCharacter(username, {
       equipment: character.equipment,
       inventory: character.inventory,
+      quests: character.quests,
     })
   }
 
@@ -145,6 +152,7 @@ export function onPlayerConnect(io, socket, username, character) {
   })
   pushSelfUpdate(player)
   pushInventory(player)
+  pushQuests(player)
   socket.to(character.map).emit(EVT.ENTITY_ENTER, publicState(player))
   console.log(`[world] ${character.nickname} 进入世界 (在线 ${online.size})`)
 
@@ -222,6 +230,31 @@ export function onPlayerConnect(io, socket, username, character) {
     saveCharacter(username, snapshotForSave(player))
   })
 
+  // NPC 交互(M9): 任务接取/交付、商店买卖、旅馆休息, 校验全在 systems/
+  socket.on(EVT.QUEST_ACCEPT, (data) => {
+    if (player.character.hp <= 0) return
+    handleQuestAccept(npcCtx, player, data)
+  })
+  socket.on(EVT.QUEST_COMPLETE, (data) => {
+    if (player.character.hp <= 0) return
+    handleQuestComplete(npcCtx, player, data)
+    saveCharacter(username, snapshotForSave(player))
+  })
+  socket.on(EVT.SHOP_BUY, (data) => {
+    if (player.character.hp <= 0) return
+    handleShopBuy(npcCtx, player, data)
+    saveCharacter(username, snapshotForSave(player))
+  })
+  socket.on(EVT.SHOP_SELL, (data) => {
+    if (player.character.hp <= 0) return
+    handleShopSell(npcCtx, player, data)
+    saveCharacter(username, snapshotForSave(player))
+  })
+  socket.on(EVT.INN_REST, (data) => {
+    if (player.character.hp <= 0) return
+    handleInnRest(npcCtx, player, data)
+  })
+
   // 传送切图: 校验玩家在传送点附近
   socket.on(EVT.CHANGE_MAP, () => {
     if (player.character.hp <= 0) return
@@ -274,6 +307,7 @@ function snapshotForSave(p) {
     mp: p.character.mp,
     equipment: p.character.equipment,
     inventory: p.character.inventory,
+    quests: p.character.quests,
   }
 }
 
@@ -297,22 +331,18 @@ const skillCtx = {
   pushSelfUpdate,
 }
 
-// 击杀奖励: 经验 + 金币 + 概率掉落装备, 处理升级(可连升)
-function grantReward(p, monsterCfg) {
-  p.character.exp += monsterCfg.exp
-  p.character.gold += monsterCfg.gold
+// 注入 systems/npcs.js 与 quests.js 的世界能力
+const npcCtx = {
+  playerStats,
+  pushSelfUpdate,
+  pushInventory,
+  gainExpGold,
+}
 
-  // 装备掉落(M8): 直接进入装备列表, 背包满则仅提示
-  const itemId = rollDrops(monsterCfg.id, p.character.classId)
-  if (itemId) {
-    if (p.character.inventory.length >= INVENTORY_CAP) {
-      pushInventory(p, { full: true })
-    } else {
-      p.character.inventory.push(itemId)
-      pushInventory(p, { gained: itemId, gainedFrom: monsterCfg.name })
-      console.log(`[world] ${p.character.nickname} 获得掉落: ${ITEMS[itemId].name}`)
-    }
-  }
+// 经验金币入账 + 升级(可连升, 回满并广播), 击杀奖励与任务奖励共用
+function gainExpGold(p, exp, gold) {
+  p.character.exp += exp
+  p.character.gold += gold
 
   let leveled = false
   while (p.character.exp >= expToNext(p.character.level)) {
@@ -333,6 +363,24 @@ function grantReward(p, monsterCfg) {
     console.log(`[world] ${p.character.nickname} 升到 ${p.character.level} 级`)
   }
   pushSelfUpdate(p)
+}
+
+// 击杀奖励: 经验 + 金币 + 概率掉落装备 + 任务进度
+function grantReward(p, monsterCfg) {
+  // 装备掉落(M8): 直接进入装备列表, 背包满则仅提示
+  const itemId = rollDrops(monsterCfg.id, p.character.classId)
+  if (itemId) {
+    if (p.character.inventory.length >= INVENTORY_CAP) {
+      pushInventory(p, { full: true })
+    } else {
+      p.character.inventory.push(itemId)
+      pushInventory(p, { gained: itemId, gainedFrom: monsterCfg.name })
+      console.log(`[world] ${p.character.nickname} 获得掉落: ${ITEMS[itemId].name}`)
+    }
+  }
+
+  gainExpGold(p, monsterCfg.exp, monsterCfg.gold)
+  onMonsterKilled(p, monsterCfg) // 任务击杀/收集进度(M9)
 }
 
 // 怪物攻击玩家结算

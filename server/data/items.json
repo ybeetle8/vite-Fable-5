@@ -6,8 +6,13 @@
     "slot": "weapon",
     "atk": 4,
     "def": 0,
-    "classes": ["hero"],
-    "starter": ["hero"]
+    "classes": [
+      "hero"
+    ],
+    "starter": [
+      "hero"
+    ],
+    "price": 120
   },
   "steel_sword": {
     "id": "steel_sword",
@@ -16,8 +21,14 @@
     "slot": "weapon",
     "atk": 12,
     "def": 0,
-    "classes": ["hero"],
-    "drop": { "monster": "skeleton", "chance": 0.08 }
+    "classes": [
+      "hero"
+    ],
+    "drop": {
+      "monster": "skeleton",
+      "chance": 0.08
+    },
+    "price": 625
   },
   "oak_staff": {
     "id": "oak_staff",
@@ -26,8 +37,13 @@
     "slot": "weapon",
     "atk": 5,
     "def": 0,
-    "classes": ["mage"],
-    "starter": ["mage"]
+    "classes": [
+      "mage"
+    ],
+    "starter": [
+      "mage"
+    ],
+    "price": 170
   },
   "flame_staff": {
     "id": "flame_staff",
@@ -36,8 +52,14 @@
     "slot": "weapon",
     "atk": 14,
     "def": 0,
-    "classes": ["mage"],
-    "drop": { "monster": "golem", "chance": 0.08 }
+    "classes": [
+      "mage"
+    ],
+    "drop": {
+      "monster": "golem",
+      "chance": 0.08
+    },
+    "price": 785
   },
   "wooden_mace": {
     "id": "wooden_mace",
@@ -46,8 +68,13 @@
     "slot": "weapon",
     "atk": 4,
     "def": 0,
-    "classes": ["priest"],
-    "starter": ["priest"]
+    "classes": [
+      "priest"
+    ],
+    "starter": [
+      "priest"
+    ],
+    "price": 120
   },
   "saint_mace": {
     "id": "saint_mace",
@@ -56,8 +83,14 @@
     "slot": "weapon",
     "atk": 12,
     "def": 0,
-    "classes": ["priest"],
-    "drop": { "monster": "treant", "chance": 0.08 }
+    "classes": [
+      "priest"
+    ],
+    "drop": {
+      "monster": "treant",
+      "chance": 0.08
+    },
+    "price": 625
   },
   "cloth_armor": {
     "id": "cloth_armor",
@@ -66,9 +99,20 @@
     "slot": "armor",
     "atk": 0,
     "def": 2,
-    "classes": ["hero", "mage", "priest"],
-    "starter": ["mage", "priest"],
-    "drop": { "monster": "slime", "chance": 0.1 }
+    "classes": [
+      "hero",
+      "mage",
+      "priest"
+    ],
+    "starter": [
+      "mage",
+      "priest"
+    ],
+    "drop": {
+      "monster": "slime",
+      "chance": 0.1
+    },
+    "price": 40
   },
   "leather_armor": {
     "id": "leather_armor",
@@ -77,9 +121,19 @@
     "slot": "armor",
     "atk": 0,
     "def": 4,
-    "classes": ["hero", "mage", "priest"],
-    "starter": ["hero"],
-    "drop": { "monster": "bigbeak", "chance": 0.08 }
+    "classes": [
+      "hero",
+      "mage",
+      "priest"
+    ],
+    "starter": [
+      "hero"
+    ],
+    "drop": {
+      "monster": "bigbeak",
+      "chance": 0.08
+    },
+    "price": 120
   },
   "chain_mail": {
     "id": "chain_mail",
@@ -88,8 +142,16 @@
     "slot": "armor",
     "atk": 0,
     "def": 8,
-    "classes": ["hero", "mage", "priest"],
-    "drop": { "monster": "mothvenom", "chance": 0.06 }
+    "classes": [
+      "hero",
+      "mage",
+      "priest"
+    ],
+    "drop": {
+      "monster": "mothvenom",
+      "chance": 0.06
+    },
+    "price": 340
   },
   "knight_plate": {
     "id": "knight_plate",
@@ -98,8 +160,15 @@
     "slot": "armor",
     "atk": 0,
     "def": 14,
-    "classes": ["hero", "priest"],
-    "drop": { "monster": "golem", "chance": 0.06 }
+    "classes": [
+      "hero",
+      "priest"
+    ],
+    "drop": {
+      "monster": "golem",
+      "chance": 0.06
+    },
+    "price": 785
   },
   "wooden_shield": {
     "id": "wooden_shield",
@@ -108,8 +177,17 @@
     "slot": "shield",
     "atk": 0,
     "def": 2,
-    "classes": ["hero", "mage", "priest"],
-    "starter": ["hero", "mage", "priest"]
+    "classes": [
+      "hero",
+      "mage",
+      "priest"
+    ],
+    "starter": [
+      "hero",
+      "mage",
+      "priest"
+    ],
+    "price": 40
   },
   "bronze_shield": {
     "id": "bronze_shield",
@@ -118,8 +196,16 @@
     "slot": "shield",
     "atk": 0,
     "def": 5,
-    "classes": ["hero", "mage", "priest"],
-    "drop": { "monster": "bigbeak", "chance": 0.06 }
+    "classes": [
+      "hero",
+      "mage",
+      "priest"
+    ],
+    "drop": {
+      "monster": "bigbeak",
+      "chance": 0.06
+    },
+    "price": 170
   },
   "spirit_orb": {
     "id": "spirit_orb",
@@ -128,8 +214,15 @@
     "slot": "shield",
     "atk": 3,
     "def": 6,
-    "classes": ["mage", "priest"],
-    "drop": { "monster": "skeleton", "chance": 0.05 }
+    "classes": [
+      "mage",
+      "priest"
+    ],
+    "drop": {
+      "monster": "skeleton",
+      "chance": 0.05
+    },
+    "price": 405
   },
   "tower_shield": {
     "id": "tower_shield",
@@ -138,7 +231,13 @@
     "slot": "shield",
     "atk": 0,
     "def": 10,
-    "classes": ["hero"],
-    "drop": { "monster": "demon", "chance": 0.1 }
+    "classes": [
+      "hero"
+    ],
+    "drop": {
+      "monster": "demon",
+      "chance": 0.1
+    },
+    "price": 475
   }
 }

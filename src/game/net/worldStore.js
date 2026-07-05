@@ -8,6 +8,7 @@ let selfServerPos = null
 let selfId = null
 let selfStats = null       // player_update 推送的自身属性
 let selfInventory = null   // inventory_update 推送的装备与背包
+let selfQuests = null      // quest_update 推送的任务状态
 const skillCdMap = new Map() // skillId -> 冷却结束时间戳(本地乐观, fail 时回滚)
 const entityListeners = new Set() // 实体增删
 const statsListeners = new Set()  // 自身属性变化
@@ -15,6 +16,7 @@ const combatListeners = new Set() // 战斗事件(每条转发)
 const skillListeners = new Set()    // skill_result 事件(特效层)
 const skillUiListeners = new Set()  // 技能栏 UI(冷却变化/施法提示)
 const inventoryListeners = new Set() // 装备背包变化
+const questListeners = new Set()     // 任务状态变化(参数为 update 载荷, 含 toast)
 
 const BUFFER_MAX = 10
 
@@ -129,6 +131,13 @@ export const worldStore = {
     notify(inventoryListeners, d)
   },
 
+  setQuests(d) {
+    selfQuests = { active: d.active, completed: d.completed }
+    notify(questListeners, d)
+  },
+
+  getQuests: () => selfQuests,
+
   // 本地乐观冷却: 发包即进 CD, 收到 fail 回滚
   markSkillUsed(skillId, cdSec) {
     skillCdMap.set(skillId, Date.now() + cdSec * 1000)
@@ -177,6 +186,7 @@ export const worldStore = {
     selfServerPos = null
     selfStats = null
     selfInventory = null
+    selfQuests = null
     skillCdMap.clear()
     notify(entityListeners)
   },
@@ -204,6 +214,10 @@ export const worldStore = {
   subscribeInventory(fn) {
     inventoryListeners.add(fn)
     return () => inventoryListeners.delete(fn)
+  },
+  subscribeQuests(fn) {
+    questListeners.add(fn)
+    return () => questListeners.delete(fn)
   },
 }
 

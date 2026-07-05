@@ -4,6 +4,8 @@ import { useMemo } from 'react'
 import { Sky, Text, Billboard } from '@react-three/drei'
 import { MAPS } from '../../../shared/config.js'
 import { OBSTACLES } from '../../../shared/obstacles.js'
+import { NPCS } from '../gameData.js'
+import Npc from '../entities/Npc.jsx'
 
 // 各主题的环境参数
 const THEMES = {
@@ -304,6 +306,13 @@ export default function GameMap({ mapId }) {
       {(map.portals ?? []).map((pt, i) => (
         <Portal key={i} portal={pt} />
       ))}
+
+      {/* NPC(M9) */}
+      {Object.values(NPCS)
+        .filter((n) => n.map === mapId)
+        .map((n) => (
+          <Npc key={n.id} npc={n} />
+        ))}
     </>
   )
 }
